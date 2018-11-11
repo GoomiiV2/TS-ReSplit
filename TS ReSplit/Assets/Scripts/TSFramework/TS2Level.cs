@@ -3,20 +3,35 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TS2;
+using UnityEditor;
 using UnityEngine;
 
 public class TS2Level : MonoBehaviour
 {
     public string LevelPak = "ts2/pak/story/l_35_ST.pak";
-    public string LevelID = "35";
+    public string LevelID  = "35";
     public Shader Shader;
+    public bool ShowVisLeafs = false;
 
     private string LevelDataPath { get { return $"{LevelPak}/bg/level{LevelID}/level{LevelID}.raw"; } }
     private Texture2D[] Textures;
 
+    // Game objects to parent differnt entitys under
+    private GameObject LevelBase   = null;
+    private GameObject SectionBase = null;
+    private GameObject DebugBase   = null;
+
     // Start is called before the first frame update
     void Start()
     {
+        // Create a root gameobject to parent level objects under
+        LevelBase   = new GameObject("Level Base");
+        SectionBase = new GameObject("Sections");
+        DebugBase   = new GameObject("Debug");
+
+        SectionBase.transform.SetParent(LevelBase.transform);
+        DebugBase.transform.SetParent(LevelBase.transform);
+
         Load();
     }
 
@@ -34,56 +49,6 @@ public class TS2Level : MonoBehaviour
 
         var level = new TS2.Map(mapData);
 
-        #region test
-        /*var mesh = new Mesh();
-        mesh.SetVertices(level.VertsTemp.Select(x => TSMeshUtils.Ts2VertToV3(x)).ToList());
-        //mesh.SetNormals(level.NormsTemp.Select(x => TSMeshUtils.Ts2VertToV3(x)).ToList());
-
-        List<int> indices = new List<int>();
-        int currentIdx    = 0;
-        bool faceDir      = false;
-        for (int eye      = 0; eye < level.VertsTemp.Count; eye++)
-        {
-            var vert = level.VertsTemp[eye];
-
-            var indiceOffset = currentIdx;
-            currentIdx++;
-
-            if (vert.Flag == 0)
-            {
-                if ((faceDir && vert.SameStrip == 1) || (!faceDir && vert.SameStrip == 0))
-                {
-                    indices.AddRange(new int[] {
-                                indiceOffset - 2,
-                                indiceOffset - 1,
-                                indiceOffset });
-                }
-                else
-                {
-                    indices.AddRange(new int[] {
-                                indiceOffset - 1,
-                                indiceOffset - 2,
-                                indiceOffset });
-                }
-            }
-            else
-            {
-                faceDir = true;
-            }
-
-            faceDir = !faceDir;
-        }
-
-        mesh.SetIndices(indices.ToArray(), MeshTopology.Triangles, 0);
-
-        mesh.RecalculateBounds();
-        mesh.RecalculateNormals();
-
-        mesh.UploadMeshData(true);
-
-        meshFilter.mesh = mesh;*/
-        #endregion
-
         LoadTextures(level.Materials);
 
         for (int i = 0; i < level.Sections.Count; i++)
@@ -91,6 +56,8 @@ public class TS2Level : MonoBehaviour
             var section = level.Sections[i];
             CreateSectionGameObj(section);
         }
+
+        if (ShowVisLeafs) { CreateVisLeafs(level); }
     }
 
     private void LoadTextures(TS2.MatInfo[] MaterialInfos)
@@ -116,7 +83,7 @@ public class TS2Level : MonoBehaviour
     private void CreateSectionGameObj(Section Section)
     {
         var sectionGObj  = new GameObject("Map Section");
-        sectionGObj.transform.localScale = new Vector3(-1, 1, 1);
+        sectionGObj.transform.localScale = new Vector3(1, 1, 1);
 
         var meshRender   = sectionGObj.AddComponent<MeshRenderer>();
         var meshFilter   = sectionGObj.AddComponent<MeshFilter>();
@@ -133,6 +100,33 @@ public class TS2Level : MonoBehaviour
         }
 
         meshFilter.mesh              = TSMeshUtils.TS2MeshToMesh(Section.Mesh, Textures.Length);
+        MeshUtility.Optimize(meshFilter.mesh);
         meshRender.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
+
+        sectionGObj.transform.SetParent(SectionBase.transform);
+    }
+
+    private void CreateVisLeafs(TS2.Map Level)
+    {
+        // Testing, drawing some points
+        for (int i = 0; i < Level.VisPortals.Count; i++)
+        {
+            var visPortal = Level.VisPortals[i];
+
+            // Messy and create garbage? yes, is just for debuging yes :>
+            //var points = Level.Boxes[i].Select((x, eye) => new { Index = eye, Value = x }).GroupBy(x => x.Index / 3).Select(x => x.Select(v => v.Value).ToList()).Select(x => new Vector3(x[0], x[1], x[2])).ToList();
+
+            var points = visPortal.Points.Select(x => new Vector3(x[0], x[1], x[2])).ToList();
+            var plane  = DebugPlane.CreateFromPoints(points);
+            plane.transform.SetParent(DebugBase.transform);
+        }
+    }
+
+    private void CreateDebugPoint(Vector3 Pos, Color? PointColor, string Label = "")
+    {
+        var point                  = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        point.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+        point.transform.position   = Pos;
+        point.transform.SetParent(DebugBase.transform);
     }
 }

@@ -212,9 +212,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2c27072f9974742986d718503c46e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LevelPak: ts2/pak/story/l_48_ST.pak
-  LevelID: 48
-  Shader: {fileID: 4800000, guid: 9bdb7faa92513d643970d79276cb763d, type: 3}
+  LevelPak: ts2/pak/story/l_10_ST.pak
+  LevelID: 10
+  Shader: {fileID: 4800000, guid: 662074e9344b60e4aae984d3fa022338, type: 3}
+  ShowVisLeafs: 1
 --- !u!4 &1359628759
 Transform:
   m_ObjectHideFlags: 0
@@ -364,7 +365,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1904178766}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: cfb6ca9c321155447a9fcfe031824a23, type: 3}
   m_Name: 

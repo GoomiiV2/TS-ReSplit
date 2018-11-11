@@ -17,6 +17,7 @@ namespace TS2
         public uint VertsOffset;
         public uint UvsOffset;
         public uint NormalsOffset;
+        public uint VertexColorsOffset;
 
         public uint NumVerts
         {
@@ -41,12 +42,11 @@ namespace TS2
             meshInfo.MatIdOffset = R.ReadUInt32();
 
             R.BaseStream.Seek(12, SeekOrigin.Current);
-            meshInfo.Offset      = R.ReadUInt32();
-            meshInfo.VertsOffset = R.ReadUInt32();
-            meshInfo.UvsOffset   = R.ReadUInt32();
-
-            R.BaseStream.Seek(4, SeekOrigin.Current);
-            meshInfo.NormalsOffset = R.ReadUInt32();
+            meshInfo.Offset             = R.ReadUInt32();
+            meshInfo.VertsOffset        = R.ReadUInt32();
+            meshInfo.UvsOffset          = R.ReadUInt32();
+            meshInfo.VertexColorsOffset = R.ReadUInt32();
+            meshInfo.NormalsOffset      = R.ReadUInt32();
 
             R.BaseStream.Seek(88, SeekOrigin.Current);
 

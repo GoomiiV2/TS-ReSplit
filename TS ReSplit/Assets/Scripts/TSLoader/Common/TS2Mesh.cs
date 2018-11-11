@@ -12,6 +12,7 @@ namespace TS2
         public Vertex[] Verts;
         public UVW[] Uvs;
         public Vertex[] Normals;
+        public uint[] VertexColors;
         public SubMeshData[] SubMeshDatas;
 
         public Vertex[][] GetTristrips()
@@ -45,7 +46,7 @@ namespace TS2
             // Verts
             R.BaseStream.Seek(Info.VertsOffset, SeekOrigin.Begin);
 
-            var verts = new List<Vertex>();
+            var verts = new List<Vertex>((int)Info.NumVerts);
             for (int i = 0; i < Info.NumVerts; i++)
             {
                 var vert = Vertex.Read(R);
@@ -55,21 +56,37 @@ namespace TS2
             // UVs 
             R.BaseStream.Seek(Info.UvsOffset, SeekOrigin.Begin);
 
-            var uvs = new List<UVW>();
+            var uvs = new List<UVW>((int)Info.NumVerts);
             for (int i = 0; i < Info.NumVerts; i++)
             {
                 var uvw = UVW.Read(R);
                 uvs.Add(uvw);
             }
 
-            // Normals
-            R.BaseStream.Seek(Info.NormalsOffset, SeekOrigin.Begin);
-
-            var normals = new List<Vertex>();
-            for (int i = 0; i < Info.NumVerts; i++)
+            // Vertex Colors
+            var vertColors = new List<uint>((int)Info.NumVerts);
+            if (Info.VertexColorsOffset != 0)
             {
-                var normal = Vertex.Read(R);
-                normals.Add(normal);
+                R.BaseStream.Seek(Info.VertexColorsOffset, SeekOrigin.Begin);
+
+                for (int i = 0; i < Info.NumVerts; i++)
+                {
+                    var color = R.ReadUInt32();
+                    vertColors.Add(color);
+                }
+            }
+
+            // Normals
+            var normals = new List<Vertex>((int)Info.NumVerts);
+            if (Info.NormalsOffset != 0)
+            {
+                R.BaseStream.Seek(Info.NormalsOffset, SeekOrigin.Begin);
+
+                for (int i = 0; i < Info.NumVerts; i++)
+                {
+                    var normal = Vertex.Read(R);
+                    normals.Add(normal);
+                }
             }
 
             // Submesh details
@@ -91,10 +108,11 @@ namespace TS2
                 }
             }
 
-            mesh.Verts = verts.ToArray();
-            mesh.Uvs = uvs.ToArray();
-            mesh.Normals = normals.ToArray();
+            mesh.Verts        = verts.ToArray();
+            mesh.Uvs          = uvs.ToArray();
+            mesh.Normals      = normals.ToArray();
             mesh.SubMeshDatas = subMeshDetails.ToArray();
+            mesh.VertexColors = vertColors.ToArray();
 
             return mesh;
         }

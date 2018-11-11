@@ -42,6 +42,19 @@ public static class TSMeshUtils
         mesh.SetUVs(0, uvs);
         //mesh.SetNormals(normals);
 
+        if (TS2Mesh.VertexColors != null)
+        {
+            var vertColors = new List<Color32>(verts.Count);
+            for (int i = 0; i < verts.Count; i++)
+            {
+                byte[] rgba      = BitConverter.GetBytes(TS2Mesh.VertexColors[i]);
+                var color        = new Color32(rgba[0], rgba[1], rgba[2], rgba[3]);
+                vertColors.Add(color);
+            }
+
+            mesh.SetColors(vertColors);
+        }
+
         var orderedIndices = subMeshIndices.ToList().OrderBy(x => x.Key).ToArray();
         mesh.subMeshCount  = NumTextures;
 
@@ -129,11 +142,15 @@ public static class TSMeshUtils
                 {
                     var vert   = TS2Mesh.Verts[eye];
                     var uv     = TS2Mesh.Uvs[eye];
-                    var normal = TS2Mesh.Normals[eye];
 
                     vertsList.Add(Ts2VertToV3(vert));
                     uvsList.Add(Ts2UVWToV2(uv));
-                    normalsList.Add(Ts2VertToV3(normal));
+
+                    if (TS2Mesh.Normals.Length > 0)
+                    {
+                        var normal = TS2Mesh.Normals[eye];
+                        normalsList.Add(Ts2VertToV3(normal));
+                    }
 
                     var indiceOffset = currentIdx + Offset;
                     currentIdx++;
