@@ -10,16 +10,19 @@ public class TS2Level : MonoBehaviour
 {
     public string LevelPak = "ts2/pak/story/l_35_ST.pak";
     public string LevelID  = "35";
-    public Shader Shader;
+    public Refrances DataAssests;
     public bool ShowVisLeafs = false;
 
     private string LevelDataPath { get { return $"{LevelPak}/bg/level{LevelID}/level{LevelID}.raw"; } }
+    private string LevelPadPath { get { return $"{LevelPak}/pad/data/level{LevelID}.raw"; } }
     private Texture2D[] Textures;
+    private TS2.Pathing LevelPad;
 
     // Game objects to parent differnt entitys under
     private GameObject LevelBase   = null;
     private GameObject SectionBase = null;
     private GameObject DebugBase   = null;
+    private GameObject PathingBase = null;
 
     // Start is called before the first frame update
     void Start()
@@ -28,11 +31,16 @@ public class TS2Level : MonoBehaviour
         LevelBase   = new GameObject("Level Base");
         SectionBase = new GameObject("Sections");
         DebugBase   = new GameObject("Debug");
+        PathingBase = new GameObject("Pathing");
 
         SectionBase.transform.SetParent(LevelBase.transform);
         DebugBase.transform.SetParent(LevelBase.transform);
+        PathingBase.transform.SetParent(LevelBase.transform);
 
         Load();
+
+        // Flip to look correct
+        LevelBase.transform.localScale = new Vector3(-1, 1, 1);
     }
 
     // Update is called once per frame
@@ -46,8 +54,10 @@ public class TS2Level : MonoBehaviour
         var meshFilter = GetComponent<MeshFilter>();
         var meshRender = GetComponent<MeshRenderer>();
         var mapData    = TSAssetManager.LoadFile(LevelDataPath);
+        var padData    = TSAssetManager.LoadFile(LevelPadPath);
 
         var level = new TS2.Map(mapData);
+        LevelPad  = new TS2.Pathing(padData);
 
         LoadTextures(level.Materials);
 
@@ -58,13 +68,15 @@ public class TS2Level : MonoBehaviour
         }
 
         if (ShowVisLeafs) { CreateVisLeafs(level); }
+
+        CreatePathingNodes();
     }
 
     private void LoadTextures(TS2.MatInfo[] MaterialInfos)
     {
         var modelPakPath = TSAssetManager.GetPakForPath(LevelDataPath).Item1;
         var texPaths     = TSTextureUtils.GetTexturePathsForMats(MaterialInfos);
-        var mat          = new Material(Shader);
+        var mat          = new Material(DataAssests.DefaultShader);
 
         Textures = new Texture2D[texPaths.Length];
 
@@ -88,7 +100,7 @@ public class TS2Level : MonoBehaviour
         var meshRender   = sectionGObj.AddComponent<MeshRenderer>();
         var meshFilter   = sectionGObj.AddComponent<MeshFilter>();
 
-        var mat    = new Material(Shader);
+        var mat    = new Material(DataAssests.DefaultShader);
 
         meshRender.materials = new Material[Textures.Length];
 
@@ -96,7 +108,7 @@ public class TS2Level : MonoBehaviour
         {
             meshRender.materials[i]             = mat;
             meshRender.materials[i].mainTexture = Textures[i];
-            meshRender.materials[i].shader      = Shader;
+            meshRender.materials[i].shader      = DataAssests.DefaultShader;
         }
 
         meshFilter.mesh              = TSMeshUtils.TS2MeshToMesh(Section.Mesh, Textures.Length);
@@ -104,6 +116,49 @@ public class TS2Level : MonoBehaviour
         meshRender.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
 
         sectionGObj.transform.SetParent(SectionBase.transform);
+    }
+
+    private void CreatePathingNodes()
+    {
+        var nodesLookup = new Dictionary<uint, GameObject>();
+
+        // Create the nodes
+        for (int i = 0; i < LevelPad.PathingNodes.Length; i++)
+        {
+            var node        = LevelPad.PathingNodes[i];
+            var nodeGO      = Instantiate(DataAssests.PathingNode);
+            var pathingNode = nodeGO.GetComponent<PathingNode>();
+            pathingNode.SetNodeData(node);
+            nodeGO.transform.SetParent(PathingBase.transform);
+
+            nodesLookup.Add(node.ID, nodeGO);
+        }
+
+        // Now link them
+        for (int i = 0; i < LevelPad.PathingLinks.Length; i++)
+        {
+            var link   = LevelPad.PathingLinks[i];
+            var parent = nodesLookup[link.ParentNodeID];
+            var child  = nodesLookup[link.ChildNodeID];
+
+            var parentPNode = parent.GetComponent<PathingNode>();
+            parentPNode.LinkedNodes.Add(child);
+        }
+
+        // Add the extra nodes
+        for (int i = 0; i < LevelPad.ExtraNodes.Length; i++)
+        {
+            var node = LevelPad.ExtraNodes[i];
+
+            var nodeGO      = Instantiate(DataAssests.PathingNode);
+            var pathingNode = nodeGO.GetComponent<PathingNode>();
+            pathingNode.SetNodeData(node, true);
+
+            var linkedNode = nodesLookup[node.UNK2];
+            pathingNode.LinkedNodes.Add(linkedNode);
+
+            nodeGO.transform.SetParent(PathingBase.transform);
+        }
     }
 
     private void CreateVisLeafs(TS2.Map Level)
@@ -122,11 +177,18 @@ public class TS2Level : MonoBehaviour
         }
     }
 
-    private void CreateDebugPoint(Vector3 Pos, Color? PointColor, string Label = "")
+    private void CreateDebugPoint(Vector3 Pos, Color? PointColor = null, string Label = "")
     {
         var point                  = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         point.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
         point.transform.position   = Pos;
         point.transform.SetParent(DebugBase.transform);
+    }
+
+    [System.Serializable]
+    public struct Refrances
+    {
+        public GameObject PathingNode;
+        public Shader DefaultShader;
     }
 }

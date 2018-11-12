@@ -149,7 +149,7 @@ public class TSPak
     {
         var entry = new TSPakEntry()
         {
-            Extra = R.ReadUInt32(),
+            Extra  = R.ReadUInt32(),
             Size   = R.ReadUInt32(),
             Offset = R.ReadUInt32()
         };
