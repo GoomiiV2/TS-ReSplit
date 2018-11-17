@@ -1,17 +1,22 @@
-﻿using System;
+﻿using Assets.Scripts.TSFramework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using TS;
 
 namespace TS2
 {
     public class Map
     {
         public MatInfo[] Materials;
-        public List<Section> Sections      = new List<Section>();
-        public List<VisPortal> VisPortals  = new List<VisPortal>();
+        public List<Section> Sections        = new List<Section>();
+        public List<VisPortal> VisPortals    = new List<VisPortal>();
+        public List<PortalDoor> PortalDoors  = new List<PortalDoor>();
 
-        public List<float[]> Boxes = new List<float[]>();
+        public List<Tuple<int, float[]>> PossablePositions = new List<Tuple<int, float[]>>();
+        public List<float[]> Positions                     = new List<float[]>();
+        public List<float[]> Boxes                         = new List<float[]>();
 
         public Map() { }
 
@@ -27,6 +32,7 @@ namespace TS2
                 uint materialInfoOffset = r.ReadUInt32();
                 uint indexOffset        = r.ReadUInt32();
                 uint dataStart          = r.ReadUInt32();
+                uint entityDefOffset    = r.ReadUInt32();
 
                 Materials = MatInfo.ReadMatInfos(r, materialInfoOffset).ToArray();
 
@@ -46,6 +52,48 @@ namespace TS2
 
                 var boxesOffset = sectionInfos[sectionInfos.Length - 2].DataOffset + 48;
                 LoadVisPortals(r, boxesOffset, 50);
+
+                PortalDoors = LoadPortalDoors(r, entityDefOffset);
+
+                // Scan the rest of the file for positions
+                //PossablePositions = Utils.ScanForVector3(r, -200.0f, 200.0f);
+
+                // Some section related points
+                /*
+                var offsets = new List<uint>();
+                foreach (var section in sectionInfos)
+                {
+                    r.BaseStream.Seek(section.StuffOffset, SeekOrigin.Begin);
+                    for (int i = 0; i < 10000; i++)
+                    {
+                        var offset = r.ReadUInt32();
+                        if (offset != 0)
+                        {
+                            offsets.Add(offset);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                }
+
+                for (int i = 0; i < offsets.Count; i++)
+                {
+                    var offset = offsets[i];
+                    r.BaseStream.Seek(offset, SeekOrigin.Begin);
+
+                    //for (int aye = 0; aye < 4; aye++)
+                    {
+                        var posAndRotation = new float[6];
+                        for (int eye = 0; eye < posAndRotation.Length; eye++)
+                        {
+                            posAndRotation[eye] = r.ReadSingle();
+                        }
+
+                        Positions.Add(posAndRotation);
+                    }
+                }*/
 
                 // Testing
                 /*var boxesOffset = sectionInfos[sectionInfos.Length - 2].DataOffset;
@@ -102,10 +150,12 @@ namespace TS2
         {
             var info = new SectionInfo()
             {
-                DataOffset = R.ReadUInt32()
+                DataOffset  = R.ReadUInt32(),
+                LinksOffset = R.ReadUInt32(),
+                StuffOffset = R.ReadUInt32()
             };
 
-            R.BaseStream.Seek(172, SeekOrigin.Current);
+            R.BaseStream.Seek(172 - 8, SeekOrigin.Current);
 
             return info;
         }
@@ -121,6 +171,28 @@ namespace TS2
                 VisPortals.Add(visPortal);
             }
         }
+
+        private List<PortalDoor> LoadPortalDoors(BinaryReader R, uint Offset)
+        {
+            if (Offset > 0)
+            {
+                R.BaseStream.Seek(Offset, SeekOrigin.Begin);
+                var numDoors    = R.ReadInt32();
+                var portalDoors = new List<PortalDoor>(numDoors);
+
+                for (int i = 0; i < numDoors; i++)
+                {
+                    var portalDoor = PortalDoor.Read(R);
+                    portalDoors.Add(portalDoor);
+                }
+
+                return portalDoors;
+            }
+            else
+            {
+                return null;
+            }
+        }
     }
 
     public struct SectionInfo
@@ -129,6 +201,7 @@ namespace TS2
 
         public uint DataOffset;
         public uint LinksOffset;
+        public uint StuffOffset;
     }
 
     public struct Section
@@ -163,6 +236,36 @@ namespace TS2
             }
 
             return visPortal;
+        }
+    }
+
+    [System.Serializable]
+    public struct PortalDoor
+    {
+        public const int SIZE = 44;
+
+        public uint ID1;
+        public uint ID2;
+        public float[] Position;
+        public float[] Dimensions;
+        public uint UNK;
+        public float Angle;
+        public uint UNK3;
+
+        public static PortalDoor Read(BinaryReader R)
+        {
+            var entityDef = new PortalDoor()
+            {
+                ID1         = R.ReadUInt32(),
+                ID2         = R.ReadUInt32(),
+                Position    = R.ReadSingleArray(3),
+                Dimensions  = R.ReadSingleArray(3),
+                UNK         = R.ReadUInt32(),
+                Angle       = R.ReadSingle(),
+                UNK3        = R.ReadUInt32()
+            };
+
+            return entityDef;
         }
     }
 }

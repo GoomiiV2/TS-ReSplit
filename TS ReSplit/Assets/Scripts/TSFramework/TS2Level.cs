@@ -1,6 +1,8 @@
 ﻿using Assets.Scripts.TSFramework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using TS2;
 using UnityEditor;
@@ -17,6 +19,10 @@ public class TS2Level : MonoBehaviour
     private string LevelPadPath { get { return $"{LevelPak}/pad/data/level{LevelID}.raw"; } }
     private Texture2D[] Textures;
     private TS2.Pathing LevelPad;
+
+    // Some debuging stuff
+    private Stopwatch PrefTimer = new Stopwatch();
+    private TimeSpan LastPrefTime;
 
     // Game objects to parent differnt entitys under
     private GameObject LevelBase   = null;
@@ -51,25 +57,52 @@ public class TS2Level : MonoBehaviour
 
     private void Load()
     {
+        PrefLog(LoadingStage.Starting);
+
         var meshFilter = GetComponent<MeshFilter>();
         var meshRender = GetComponent<MeshRenderer>();
         var mapData    = TSAssetManager.LoadFile(LevelDataPath);
         var padData    = TSAssetManager.LoadFile(LevelPadPath);
+        PrefLog(LoadingStage.LevelDataLoad);
 
         var level = new TS2.Map(mapData);
         LevelPad  = new TS2.Pathing(padData);
+        PrefLog(LoadingStage.LevelDataParsing);
 
         LoadTextures(level.Materials);
+        PrefLog(LoadingStage.TextureLoadingCreation);
 
         for (int i = 0; i < level.Sections.Count; i++)
         {
             var section = level.Sections[i];
             CreateSectionGameObj(section);
         }
+        PrefLog(LoadingStage.SectionCreation);
 
         if (ShowVisLeafs) { CreateVisLeafs(level); }
 
         CreatePathingNodes();
+        CreatePortalDoors(level);
+        PrefLog(LoadingStage.Misc);
+
+        /*for (int i = 0; i < level.PossablePositions.Count; i++)
+        {
+            var posAndOffset = level.PossablePositions[i];
+            var pos = new Vector3(posAndOffset.Item2[0], posAndOffset.Item2[1], posAndOffset.Item2[2]);
+
+            CreateDebugPoint(pos, null, $"{posAndOffset.Item1}");
+        }*/
+
+        /*for (int i = 0; i < level.Positions.Count; i++)
+        {
+            var posAndRotation = level.Positions[i];
+            var pos            = new Vector3(posAndRotation[0], posAndRotation[1], posAndRotation[2]);
+            var rot            = new Vector3(posAndRotation[3], posAndRotation[4], posAndRotation[5]);
+
+            CreateDebugPoint(pos);
+        }*/
+
+        PrefLog(LoadingStage.Total);
     }
 
     private void LoadTextures(TS2.MatInfo[] MaterialInfos)
@@ -177,12 +210,69 @@ public class TS2Level : MonoBehaviour
         }
     }
 
+    private void CreatePortalDoors(TS2.Map Level)
+    {
+        if (Level.PortalDoors != null)
+        {
+            for (int i = 0; i < Level.PortalDoors.Count; i++)
+            {
+                var entityDef  = Level.PortalDoors[i];
+                var pos        = Utils.V3FromFloats(entityDef.Position);
+                var dims       = Utils.V3FromFloats(entityDef.Dimensions);
+
+                var dbgObj = DebugDoor.Create(pos, dims, "Door?", entityDef);
+                dbgObj.transform.SetParent(DebugBase.transform);
+            }
+        }
+    }
+
     private void CreateDebugPoint(Vector3 Pos, Color? PointColor = null, string Label = "")
     {
         var point                  = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        Renderer rend              = point.GetComponent<Renderer>();
+
+        point.name                 = Label;
+        rend.material.color        = PointColor.HasValue ? PointColor.Value : Color.white;
         point.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
         point.transform.position   = Pos;
         point.transform.SetParent(DebugBase.transform);
+    }
+
+    // Debug log some load times
+    private void PrefLog(LoadingStage Stage)
+    {
+        var timeTaken = PrefTimer.Elapsed;
+
+        if (Stage == LoadingStage.Starting)
+        {
+            PrefTimer    = Stopwatch.StartNew();
+            LastPrefTime = timeTaken;
+            UnityEngine.Debug.Log("Starting level loading pref timer");
+        }
+        else if (Stage == LoadingStage.Total)
+        {
+            PrefTimer.Stop();
+            var totalElapsed = PrefTimer.Elapsed;
+            UnityEngine.Debug.Log($"Level load took: {totalElapsed.ToString("ss's - 'fff'ms'")}");
+        }
+        else
+        {
+            var delta = timeTaken - LastPrefTime;
+            UnityEngine.Debug.Log($"Level load: {Stage.ToString()} took {delta.ToString("ss's - 'fff'ms'")}");
+        }
+
+        LastPrefTime = timeTaken;
+    }
+
+    private enum LoadingStage
+    {
+        Starting,
+        LevelDataLoad,
+        LevelDataParsing,
+        TextureLoadingCreation,
+        SectionCreation,
+        Misc,
+        Total
     }
 
     [System.Serializable]

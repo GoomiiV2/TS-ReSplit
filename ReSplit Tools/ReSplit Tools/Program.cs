@@ -1,5 +1,7 @@
 ﻿using CommandLine;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 
@@ -15,6 +17,10 @@ namespace ReSplit_Tools
                 {
                     PrintListing(o);
                 }
+                else if (o.Manifest != null && o.Pack == null)
+                {
+                    ExportManifest(o);
+                }
 
                 if (o.extract)
                 {
@@ -26,6 +32,10 @@ namespace ReSplit_Tools
                     {
                         Console.WriteLine("No output path given, please give a path to extract the files to with -o");
                     }
+                }
+                else if (o.Pack != null)
+                {
+                    PackFiles(o);
                 }
             });
         }
@@ -83,6 +93,20 @@ namespace ReSplit_Tools
             }
         }
 
+        private static void ExportManifest(CmdOpts Opts)
+        {
+            var filesPaths = Opts.Input.Split(',');
+
+            foreach (var filePath in filesPaths)
+            {
+                var pak       = LoadPak(filePath);
+                var fileNames = pak.GetFileList();
+
+                var json = JsonConvert.SerializeObject(fileNames, Formatting.Indented);
+                File.WriteAllText(Opts.Manifest, json);
+            }
+        }
+
         private static void ExtractFile(byte[] Data, string FilePath)
         {
             var dirPath  = Path.GetDirectoryName(FilePath);
@@ -93,6 +117,30 @@ namespace ReSplit_Tools
             }
 
             File.WriteAllBytes(FilePath, Data);
+        }
+
+        private static void PackFiles(CmdOpts Opts)
+        {
+            var version = TSPak.GetPakVersion(Opts.Pack);
+            var packer  = new Packer(Opts.Output, version);
+
+            if (Opts.Manifest != null)
+            {
+                var json       = File.ReadAllText(Opts.Manifest);
+                var filesToPak = JsonConvert.DeserializeObject<List<string>>(json);
+
+                foreach (var file in filesToPak)
+                {
+                    var fullPath = Path.Combine(Opts.Input, file);
+                    packer.AddFile(fullPath, file);
+                }
+            }
+            else
+            {
+                packer.AddFolder(Opts.Input);
+            }
+
+            packer.Finsih();
         }
     }
 }

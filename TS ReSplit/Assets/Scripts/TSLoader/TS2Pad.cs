@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 
 namespace TS2
 {
+    // Pathing info for a level
+    // A sereis of node, then kinks for those node followed by a section of Exra node for things like cameras and pickups
     public class Pathing
     {
         public Header   Head;

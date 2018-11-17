@@ -24,18 +24,20 @@ public class TSPak
                 {
                     LoadHeader(reader);
 
-                    var headerMagic = new string(Header.Magic);
-                    if (headerMagic == "P5CK") // Timesplitters 3: Future Perfect
+                    var pakVersion = GetPakVersion(new string(Header.Magic));
+                    switch(pakVersion)
                     {
-                        LoadDirEntriesV5(reader);
-                    }
-                    else if (headerMagic == "P4CK") // Timesplitters 2
-                    {
-                        LoadDirEntriesV4(reader);
-                    }
-                    else if (headerMagic == "P8CK") // Timesplitters 2 GC and the homefront easter egg for Timesplitters 2
-                    {
-                        LoadDirEntriesV8(reader);
+                        case PakVersion.P4CK: // Timesplitters 2
+                            LoadDirEntriesV4(reader);
+                            break;
+
+                        case PakVersion.P5CK: // Timesplitters 3: Future Perfect
+                            LoadDirEntriesV5(reader);
+                            break;
+
+                        case PakVersion.P8CK: // Timesplitters 2 GC and the homefront easter egg for Timesplitters 2
+                            LoadDirEntriesV8(reader);
+                            break;
                     }
                 }
             }
@@ -77,6 +79,22 @@ public class TSPak
         Header.DirOffset       = R.ReadUInt32();
         Header.DirSize         = R.ReadUInt32();
         Header.FilenamesOffset = R.ReadUInt32();
+    }
+
+    public static PakVersion GetPakVersion(string Magic)
+    {
+        switch(Magic)
+        {
+            case "P4CK":
+                return PakVersion.P4CK;
+            case "P5CK":
+                return PakVersion.P5CK;
+            case "P8CK":
+                return PakVersion.P8CK;
+
+            default:
+                return PakVersion.UNKNOWN;
+        }
     }
 
     private TSPakEntry ReadDirEntryV4(BinaryReader R)
@@ -253,4 +271,12 @@ public struct TSPakEntry
     public uint Offset;
     public uint Size;
     public uint Extra;
+}
+
+public enum PakVersion
+{
+    P4CK,
+    P5CK,
+    P8CK,
+    UNKNOWN
 }
