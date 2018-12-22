@@ -15,14 +15,18 @@ public class DebugPlane : MonoBehaviour
     {
         if (!PlaneColor.HasValue) { PlaneColor = Color.magenta; }
 
-        var gameObject = new GameObject($"DebugPlane: {Label}");
-        var meshRender = gameObject.AddComponent<MeshRenderer>();
-        var meshFilter = gameObject.AddComponent<MeshFilter>();
+        var gameObject               = new GameObject($"DebugPlane: {Label}");
+        var meshRender               = gameObject.AddComponent<MeshRenderer>();
+        var meshFilter               = gameObject.AddComponent<MeshFilter>();
         meshRender.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        meshRender.receiveShadows    = false;
 
         // Mesh
         var mesh = new Mesh();
         mesh.SetVertices(Points.ToList());
+        var uvs = new Vector3[] { new Vector3(0, 0), new Vector3(1, 0), new Vector3(1, 1), new Vector3(1, 0) }.ToList();
+        uvs.AddRange(new Vector3[] { new Vector3(0, 0), new Vector3(1, 0), new Vector3(1, 1), new Vector3(1, 0) });
+        mesh.SetUVs(0, uvs);
         mesh.SetIndices(new int[] { 0, 1, 2, 3,  3, 2, 1, 0 }, MeshTopology.Quads, 0); // Two for double sided, didn't feel like making a shader
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
@@ -38,6 +42,7 @@ public class DebugPlane : MonoBehaviour
         // Label
         var labelObj                = new GameObject("Text");
         var textLabel               = labelObj.AddComponent<TextMesh>();
+        var meshRenderText          = labelObj.GetComponent<MeshRenderer>();
         textLabel.text              = Label;
         textLabel.alignment         = TextAlignment.Center;
         textLabel.anchor            = TextAnchor.MiddleCenter;
@@ -45,6 +50,10 @@ public class DebugPlane : MonoBehaviour
         textLabel.fontSize          = 32;
         labelObj.transform.position = mesh.bounds.center;
         labelObj.transform.rotation = Quaternion.LookRotation(normal, Vector3.up);
+
+        //meshRenderText.materials     = new Material[1];
+        /*var textMat                    = (Material)AssetDatabase.LoadAssetAtPath("Assets/Mats/DebugPlaneText.mat", typeof(Material));
+        meshRenderText.material.shader = textMat.shader;*/
 
         labelObj.transform.SetParent(gameObject.transform);
 

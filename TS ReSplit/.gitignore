@@ -37,3 +37,10 @@ sysinfo.txt
 *.unitypackage
 
 *.log
+
+#Don't add lightmaps to git, can regenerate them, even tho it might take a while
+*LightingData.asset
+*LightingData.asset.meta
+*Lightmap-*.*
+*ReflectionProbe-*
+*OcclusionCullingData.*

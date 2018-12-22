@@ -4,9 +4,61 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using TS;
 
 namespace TS2
 {
+    public struct SubMesh
+    {
+        public enum MeshIds
+        {
+            MainMesh,
+            SecondaryMesh,
+            TransparentMesh
+        };
+
+        public Mesh[] Meshes;
+
+        public Mesh MainMesh            { get { return Meshes[(int)MeshIds.MainMesh];           } }
+        public Mesh SecondaryMesh       { get { return Meshes[(int)MeshIds.SecondaryMesh];      } }
+        public Mesh TransparentMesh     { get { return Meshes[(int)MeshIds.TransparentMesh];    } }
+
+        public uint[] GetTextureIds(MatInfo[] MatInfos)
+        {
+            var uids = new List<uint>(MatInfos.Length);
+            for (int i = 0; i < Meshes.Length; i++)
+            {
+                var mesh = Meshes[i];
+                if (mesh != null)
+                {
+                    var ids = mesh.GetTextureIds(MatInfos);
+                    for (int eye = 0; eye < ids.Length; eye++)
+                    {
+                        if (!uids.Contains(ids[eye]))
+                        {
+                            uids.Add(ids[eye]);
+                        }
+                    }
+                }
+            }
+
+            return uids.ToArray();
+        }
+
+        public static SubMesh Load(BinaryReader R, MeshInfo Info)
+        {
+            var subMesh = new SubMesh();
+            subMesh.Meshes = new Mesh[]
+            {
+                Mesh.Load(R, Info.MeshOffsets),
+                Mesh.Load(R, Info.MeshOffsets2),
+                Mesh.Load(R, Info.TransparentMeshOffsets)
+            };
+
+            return subMesh;
+        }
+    }
+
     public class Mesh
     {
         public Vertex[] Verts;
@@ -14,6 +66,7 @@ namespace TS2
         public Vertex[] Normals;
         public uint[] VertexColors;
         public SubMeshData[] SubMeshDatas;
+        public MatInfo[] MatInfos;
 
         public Vertex[][] GetTristrips()
         {
@@ -39,13 +92,52 @@ namespace TS2
             return triStripsArray;
         }
 
-        public static Mesh Load(BinaryReader R, MeshInfo Info)
+        // Returns a list of the texture ids that are actually used on this mesh
+        public uint[] GetTextureIds(MatInfo[] MatInfos)
         {
-            var mesh = new Mesh();
+            var uniqueMats = SubMeshDatas.DistinctBy(x => x.MatID).OrderBy(x => x.MatID).ToArray();
+            var uniqueIds  = new uint[uniqueMats.Count()];
+
+            for (uint i = 0; i < uniqueMats.Count(); i++)
+            {
+                var matId    = uniqueMats[i].MatID;
+
+                try
+                {
+                    if (i < MatInfos.Length)
+                    {
+                        uniqueIds[i] = MatInfos[matId].ID;
+                    }
+                    else
+                    {
+                        uniqueIds[i] = uint.MaxValue; // Force the missing texture to be used
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+
+            return uniqueIds;
+        }
+
+        public static Mesh Load(BinaryReader R, MeshInfoOffsets Info)
+        {
+            if (Info.MatRanges == 0) { return null; }
+
+            var mesh               = new Mesh();
+
+            // Mat infos
+            var matListSize = Info.Verts - Info.Offset;
+            if (matListSize > 0)
+            {
+                var numMats      = (matListSize) / MatInfo.SIZE;
+                mesh.MatInfos    = MatInfo.ReadMatInfos(R, Info.Offset, (int)numMats);
+            }
 
             // Verts
-            R.BaseStream.Seek(Info.VertsOffset, SeekOrigin.Begin);
-
+            R.BaseStream.Seek(Info.Verts, SeekOrigin.Begin);
             var verts = new List<Vertex>((int)Info.NumVerts);
             for (int i = 0; i < Info.NumVerts; i++)
             {
@@ -54,8 +146,7 @@ namespace TS2
             }
 
             // UVs 
-            R.BaseStream.Seek(Info.UvsOffset, SeekOrigin.Begin);
-
+            R.BaseStream.Seek(Info.Uvs, SeekOrigin.Begin);
             var uvs = new List<UVW>((int)Info.NumVerts);
             for (int i = 0; i < Info.NumVerts; i++)
             {
@@ -65,9 +156,9 @@ namespace TS2
 
             // Vertex Colors
             var vertColors = new List<uint>((int)Info.NumVerts);
-            if (Info.VertexColorsOffset != 0)
+            if (Info.VertexColors != 0)
             {
-                R.BaseStream.Seek(Info.VertexColorsOffset, SeekOrigin.Begin);
+                R.BaseStream.Seek(Info.VertexColors, SeekOrigin.Begin);
 
                 for (int i = 0; i < Info.NumVerts; i++)
                 {
@@ -78,9 +169,9 @@ namespace TS2
 
             // Normals
             var normals = new List<Vertex>((int)Info.NumVerts);
-            if (Info.NormalsOffset != 0)
+            if (Info.Normals != 0)
             {
-                R.BaseStream.Seek(Info.NormalsOffset, SeekOrigin.Begin);
+                R.BaseStream.Seek(Info.Normals, SeekOrigin.Begin);
 
                 for (int i = 0; i < Info.NumVerts; i++)
                 {
@@ -90,8 +181,7 @@ namespace TS2
             }
 
             // Submesh details
-            R.BaseStream.Seek(Info.MatIdOffset, SeekOrigin.Begin);
-
+            R.BaseStream.Seek(Info.MatRanges, SeekOrigin.Begin);
             var subMeshDetails = new List<SubMeshData>();
             while (true)
             {

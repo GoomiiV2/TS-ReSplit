@@ -4,6 +4,8 @@ namespace TS2
 {
     public struct Vertex
     {
+        public const uint SIZE = 16;
+
         public float X;
         public float Y;
         public float Z;

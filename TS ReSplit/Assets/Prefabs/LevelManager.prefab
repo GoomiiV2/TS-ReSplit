@@ -45,13 +45,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ba2c27072f9974742986d718503c46e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LevelPak: ts2/pak/story/l_35_ST.pak
-  LevelID: 35
+  LevelPak: ts2/pak/arcade/l_36_AR.pak
+  LevelID: 36
   DataAssests:
     PathingNode: {fileID: 3878314800757652293, guid: c3d813f6ceb0b2741aa2d75efac70997,
       type: 3}
     DefaultShader: {fileID: 4800000, guid: 662074e9344b60e4aae984d3fa022338, type: 3}
+    TransparentShader: {fileID: 4800000, guid: 7b31be70ac39a98499bfb7f86cb52130, type: 3}
+    MissingTexture: {fileID: 2800000, guid: ec6e33471f4349641b5f43c1b13a9459, type: 3}
+    DefaultMat: {fileID: 2100000, guid: b7f93e63b56624449889b9aebceaeac6, type: 2}
   ShowVisLeafs: 0
+  CreateCollision: 0
 --- !u!33 &3330115997250126102
 MeshFilter:
   m_ObjectHideFlags: 0

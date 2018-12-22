@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 // Static helpers to convert from raw TImesplitter mesh data to Unitys Meshes and such
@@ -9,7 +10,108 @@ using UnityEngine;
 public static class TSMeshUtils
 {
 
-    public static Mesh TS2MeshToMesh(TS2.Mesh TS2Mesh, int NumTextures)
+    /*public static Mesh SubMeshToMesh(TS2.SubMesh TS2SubMesh)
+    {
+        var meshes = new List<CombineInstance>();
+        if (TS2SubMesh.MainMesh != null)            { meshes.Add(new CombineInstance() { mesh = TS2MeshToMesh(TS2SubMesh.MainMesh), subMeshIndex = meshes.Count });          }
+        if (TS2SubMesh.SecondaryMesh != null)       { meshes.Add(new CombineInstance() { mesh = TS2MeshToMesh(TS2SubMesh.SecondaryMesh), subMeshIndex = meshes.Count });     }
+        if (TS2SubMesh.TransparentMesh != null)     { meshes.Add(new CombineInstance() { mesh = TS2MeshToMesh(TS2SubMesh.TransparentMesh), subMeshIndex = meshes.Count });   }
+
+        var mesh = new Mesh();
+        mesh.CombineMeshes(meshes.ToArray(), false, false, false);
+
+        return mesh;
+    }*/
+
+    public static MeshData SubMeshToMesh(TS2.SubMesh TS2SubMesh)
+    {
+        return SubMeshToMesh(TS2SubMesh, MeshCreationData.Defaults);
+    }
+
+    public static MeshData SubMeshToMesh(TS2.SubMesh TS2SubMesh, MeshCreationData Options)
+    {
+        var mesh              = new Mesh();
+        var verts             = new List<Vector3>();
+        var uvs               = new List<Vector2>();
+        var normals           = new List<Vector3>();
+        var texData           = new List<(MeshTexMeta, List<int> Indices)>();
+        var lastIndiceId      = 0;
+
+
+        for (int i = 0; i < TS2SubMesh.Meshes.Length; i++)
+        {
+            var subMeshMesh    = TS2SubMesh.Meshes[i];
+
+            if (subMeshMesh != null
+                    && ((   TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.MainMesh           && Options.CreateMainMesh
+                        || (TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.SecondaryMesh      && Options.CreateOverlaysMesh
+                        || (TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.TransparentMesh    && Options.CreateTransparentMesh)
+                )
+            {
+                var indices        = new Dictionary<int, List<int>>();
+                var rawData        = TS2MeshToRawSubMeshe(subMeshMesh, verts.Count);
+
+                for (int eye = 0; eye < rawData.SubMeshs.Length; eye++)
+                {
+                    var data = rawData.SubMeshs[eye];
+                    if (indices.ContainsKey(data.MatID)) {
+                        indices[data.MatID].AddRange(data.Indices);
+                    }
+                    else {
+                        indices.Add(data.MatID, data.Indices);
+                    }
+                }
+
+                verts.AddRange(rawData.Verts);
+                uvs.AddRange(rawData.Uvs);
+                normals.AddRange(rawData.Normals);
+
+                // Texture data
+                var indiceData = indices.Select((x, idx) => (new MeshTexMeta()
+                {
+                    Idx           = lastIndiceId + idx,
+                    TexId         = x.Key,
+                    IsTransparent = (i != (int)TS2.SubMesh.MeshIds.MainMesh)
+                }, x.Value)).ToArray();
+
+                texData.AddRange(indiceData);
+
+                lastIndiceId += indiceData.Count();
+            }
+        }
+
+        mesh.SetVertices(verts);
+        mesh.SetUVs(0, uvs);
+
+        var orderedIndices = texData.Select(x => x.Indices).ToArray();
+        mesh.subMeshCount = orderedIndices.Length;
+
+        for (int i = 0; i < orderedIndices.Length; i++)
+        {
+            var meshMat = orderedIndices[i];
+            mesh.SetTriangles(meshMat, i);
+        }
+
+        mesh.RecalculateNormals();
+
+        if (mesh.vertices != null && mesh.vertices.Count() > 0)
+        {
+            Unwrapping.GenerateSecondaryUVSet(mesh);
+        }
+
+        MeshUtility.Optimize(mesh);
+        mesh.UploadMeshData(true);
+
+        var meshData = new MeshData()
+        {
+            Mesh    = mesh,
+            TexData = texData.Select(x => x.Item1).ToArray()
+        };
+
+        return meshData;
+    }
+
+    public static Mesh TS2MeshToMesh(TS2.Mesh TS2Mesh)
     {
         var mesh           = new Mesh();
         var verts          = new List<Vector3>();
@@ -56,11 +158,17 @@ public static class TSMeshUtils
         }
 
         var orderedIndices = subMeshIndices.ToList().OrderBy(x => x.Key).ToArray();
-        mesh.subMeshCount  = NumTextures;
+        mesh.subMeshCount  = orderedIndices.Length;
 
-        foreach (var meshMat in orderedIndices)
+        /*foreach (var meshMat in orderedIndices)
         {
             mesh.SetTriangles(meshMat.Value, meshMat.Key);
+        }*/
+
+        for (int i = 0; i < orderedIndices.Length; i++)
+        {
+            var meshMat = orderedIndices[i];
+            mesh.SetTriangles(meshMat.Value, i);
         }
 
         //mesh.RecalculateBounds();
@@ -241,4 +349,31 @@ public struct SubMeshData
     public ushort MatID;
     public ushort ID;
     public List<int> Indices;
+}
+
+public struct MeshData
+{
+    public Mesh Mesh;
+    public MeshTexMeta[] TexData;
+}
+
+public struct MeshTexMeta
+{
+    public int Idx;
+    public int TexId;
+    public bool IsTransparent;
+}
+
+public struct MeshCreationData
+{
+    public bool CreateMainMesh;
+    public bool CreateOverlaysMesh;
+    public bool CreateTransparentMesh;
+
+    public static readonly MeshCreationData Defaults = new MeshCreationData()
+    {
+        CreateMainMesh        = true,
+        CreateOverlaysMesh    = true,
+        CreateTransparentMesh = true
+    };
 }

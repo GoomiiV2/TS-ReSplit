@@ -52,14 +52,14 @@ namespace TS2
                 meshInfos.Add(meshInfo);
             }
 
-            var meshes = new List<Mesh>();
+            /*var meshes = new List<Mesh>();
             foreach (var meshInfo in meshInfos)
             {
                 var mesh = Mesh.Load(R, meshInfo);
                 meshes.Add(mesh);
-            }
+            }*/
 
-            Meshes = meshes.ToArray();
+            //Meshes = meshes.ToArray();
         }
     }
 

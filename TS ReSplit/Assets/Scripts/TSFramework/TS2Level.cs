@@ -8,16 +8,21 @@ using TS2;
 using UnityEditor;
 using UnityEngine;
 
+using TextureStore = System.Collections.Generic.Dictionary<uint, (UnityEngine.Texture2D Tex, TS2.Texture.MetaInfo Meta)>;
+
+[ExecuteInEditMode]
 public class TS2Level : MonoBehaviour
 {
     public string LevelPak = "ts2/pak/story/l_35_ST.pak";
     public string LevelID  = "35";
     public Refrances DataAssests;
-    public bool ShowVisLeafs = false;
+    public bool ShowVisLeafs        = false;
+    public bool CreateCollision     = false;
+    public LevelBakedData BakedData = new LevelBakedData();
 
     private string LevelDataPath { get { return $"{LevelPak}/bg/level{LevelID}/level{LevelID}.raw"; } }
     private string LevelPadPath { get { return $"{LevelPak}/pad/data/level{LevelID}.raw"; } }
-    private Texture2D[] Textures;
+    private TextureStore Textures;
     private TS2.Pathing LevelPad;
 
     // Some debuging stuff
@@ -25,19 +30,21 @@ public class TS2Level : MonoBehaviour
     private TimeSpan LastPrefTime;
 
     // Game objects to parent differnt entitys under
-    private GameObject LevelBase   = null;
-    private GameObject SectionBase = null;
-    private GameObject DebugBase   = null;
-    private GameObject PathingBase = null;
+    [System.NonSerialized] public GameObject LevelBase   = null;
+    [System.NonSerialized] public GameObject SectionBase = null;
+    [System.NonSerialized] public GameObject DebugBase   = null;
+    [System.NonSerialized] public GameObject PathingBase = null;
 
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
+        TidyUpIfEditor();
+
         // Create a root gameobject to parent level objects under
-        LevelBase   = new GameObject("Level Base");
-        SectionBase = new GameObject("Sections");
-        DebugBase   = new GameObject("Debug");
-        PathingBase = new GameObject("Pathing");
+        LevelBase   = new GameObject("Level Base")  { isStatic = true };
+        SectionBase = new GameObject("Sections")    { isStatic = true };
+        DebugBase   = new GameObject("Debug")       { isStatic = true };
+        PathingBase = new GameObject("Pathing")     { isStatic = true };
 
         SectionBase.transform.SetParent(LevelBase.transform);
         DebugBase.transform.SetParent(LevelBase.transform);
@@ -47,6 +54,11 @@ public class TS2Level : MonoBehaviour
 
         // Flip to look correct
         LevelBase.transform.localScale = new Vector3(-1, 1, 1);
+
+        // Swap back to the scene view, nicer for dev :>
+        #if UNITY_EDITOR
+        //UnityEditor.SceneView.FocusWindowIfItsOpen(typeof(UnityEditor.SceneView));
+        #endif
     }
 
     // Update is called once per frame
@@ -66,16 +78,20 @@ public class TS2Level : MonoBehaviour
         PrefLog(LoadingStage.LevelDataLoad);
 
         var level = new TS2.Map(mapData);
-        LevelPad  = new TS2.Pathing(padData);
+        if (padData != null)
+        {
+            LevelPad = new TS2.Pathing(padData);
+        }
         PrefLog(LoadingStage.LevelDataParsing);
 
+        Textures = new TextureStore();
         LoadTextures(level.Materials);
         PrefLog(LoadingStage.TextureLoadingCreation);
 
         for (int i = 0; i < level.Sections.Count; i++)
         {
             var section = level.Sections[i];
-            CreateSectionGameObj(section);
+            CreateSectionGameObj(section, level, i);
         }
         PrefLog(LoadingStage.SectionCreation);
 
@@ -105,54 +121,123 @@ public class TS2Level : MonoBehaviour
         PrefLog(LoadingStage.Total);
     }
 
+    // If we playied from the editor tidy up somethings first
+    private void TidyUpIfEditor()
+    {
+        if (Application.isEditor)
+        {
+            UnityEngine.Debug.Log("Running inside the editor, tidying up");
+            CreateLevel.RemoveGenratedContent();
+        }
+    }
+
     private void LoadTextures(TS2.MatInfo[] MaterialInfos)
     {
         var modelPakPath = TSAssetManager.GetPakForPath(LevelDataPath).Item1;
         var texPaths     = TSTextureUtils.GetTexturePathsForMats(MaterialInfos);
         var mat          = new Material(DataAssests.DefaultShader);
 
-        Textures = new Texture2D[texPaths.Length];
-
         for (int i = 0; i < texPaths.Length; i++)
         {
-            var texPath = texPaths[i];
+            var texID              = MaterialInfos[i];
+            var isTexAlreadyLoaded = Textures.ContainsKey(texID.ID);
 
-            var texData = TSAssetManager.LoadFile($"{modelPakPath}/{texPath}");
-            var ts2tex  = new TS2.Texture(texData);
-            var tex     = TSTextureUtils.TS2TexToT2D(ts2tex);
+            if (!isTexAlreadyLoaded)
+            {
+                var texPath = texPaths[i];
+                var texData = TSAssetManager.LoadFile($"{modelPakPath}/{texPath}");
+                var ts2tex  = new TS2.Texture(texData);
+                var tex     = TSTextureUtils.TS2TexToT2D(ts2tex);
 
-            Textures[i] = tex;
+                Textures.Add(texID.ID, (tex, ts2tex.Meta));
+            }
         }
     }
 
-    private void CreateSectionGameObj(Section Section)
+    // Gets a texture from the cache, or loads it if it was missing
+    private (Texture2D Tex, TS2.Texture.MetaInfo Meta) GetTexture(uint MatInfoId)
     {
-        var sectionGObj  = new GameObject("Map Section");
+        var isLoaded = Textures.TryGetValue(MatInfoId, out (Texture2D Tex, TS2.Texture.MetaInfo Meta) Tex);
+        if (isLoaded)
+        {
+            return Tex;
+        }
+        else
+        {
+            var texArr = new TS2.MatInfo[] { new MatInfo() { ID = MatInfoId } };
+            LoadTextures(texArr);
+
+            return Textures[MatInfoId];
+        }
+    }
+
+    private void CreateSectionGameObj(Section Section, TS2.Map Map, int Idx)
+    {
+        UnityEngine.Debug.Log($"Creating section: {Section.ID}");
+
+        var mesh                         = TSMeshUtils.SubMeshToMesh(Section.Mesh);
+        var sectionGObj                  = new GameObject($"Map Section {Idx}");
         sectionGObj.transform.localScale = new Vector3(1, 1, 1);
 
         var meshRender   = sectionGObj.AddComponent<MeshRenderer>();
         var meshFilter   = sectionGObj.AddComponent<MeshFilter>();
+        var collider     = sectionGObj.AddComponent<MeshCollider>();
 
-        var mat    = new Material(DataAssests.DefaultShader);
+        var mat                    = new Material(DataAssests.DefaultShader);
+        var mats                   = mesh.TexData;
+        meshRender.materials = new Material[mats.Length];
 
-        meshRender.materials = new Material[Textures.Length];
-
-        for (int i = 0; i < Textures.Length; i++)
+        for (int i = 0; i < meshRender.materials.Length; i++)
         {
-            meshRender.materials[i]             = mat;
-            meshRender.materials[i].mainTexture = Textures[i];
-            meshRender.materials[i].shader      = DataAssests.DefaultShader;
+            var levelMat                        = Map.Materials[mats[i].TexId];
+            var matId                           = levelMat.ID;
+            var hasTex                          = Textures.TryGetValue(matId, out var tex);
+
+            if (!hasTex) { tex = (DataAssests.MissingTexture, new TS2.Texture.MetaInfo() { HasAlpha = false }); } // Incase a texture is missing, for some reason
+
+            if (mats[i].IsTransparent)
+            {
+                meshRender.materials[i]             = new Material(DataAssests.DefaultShader);
+                meshRender.materials[i].mainTexture = tex.Tex;
+                meshRender.materials[i].shader      = DataAssests.TransparentShader;
+
+                meshRender.materials[i].SetFloat("_ClampUVsX", levelMat.WrapModeX == MatInfo.WrapMode.NoRepeat ? 1 : 0);
+                meshRender.materials[i].SetFloat("_ClampUVsY", levelMat.WrapModeY == MatInfo.WrapMode.NoRepeat ? 1 : 0);
+            }
+            else
+            {
+
+                meshRender.materials[i] = new Material(DataAssests.DefaultShader);
+                meshRender.materials[i].CopyPropertiesFromMaterial(DataAssests.DefaultMat);
+                meshRender.materials[i].mainTexture = tex.Tex;
+            }
         }
 
-        meshFilter.mesh              = TSMeshUtils.TS2MeshToMesh(Section.Mesh, Textures.Length);
-        MeshUtility.Optimize(meshFilter.mesh);
+        meshFilter.mesh = mesh.Mesh;
         meshRender.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.TwoSided;
 
+        if (CreateCollision)
+        {
+            collider.sharedMesh = meshFilter.mesh;
+            //collider.cookingOptions = MeshColliderCookingOptions.EnableMeshCleaning & MeshColliderCookingOptions.WeldColocatedVertices;
+        }
+
         sectionGObj.transform.SetParent(SectionBase.transform);
+        sectionGObj.isStatic  = true;
+        sectionGObj.tag       = "LevelSection";
+
+        // Apply per section overrides
+        if (BakedData != null && BakedData.PerSectionData != null)
+        {
+            var sectionData = BakedData.PerSectionData[Idx];
+            sectionData.Apply(sectionGObj);
+        }
     }
 
     private void CreatePathingNodes()
     {
+        if (LevelPad == null) { return; }
+
         var nodesLookup = new Dictionary<uint, GameObject>();
 
         // Create the nodes
@@ -280,5 +365,9 @@ public class TS2Level : MonoBehaviour
     {
         public GameObject PathingNode;
         public Shader DefaultShader;
+        public Shader TransparentShader;
+        public Texture2D MissingTexture;
+
+        public Material DefaultMat;
     }
 }

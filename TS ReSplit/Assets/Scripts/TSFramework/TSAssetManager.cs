@@ -110,3 +110,17 @@ public struct PakFileData
     public Dictionary<string, TSPakEntry> FilesData;
     public FileStream FileHandle;
 }
+
+public enum TSGame
+{
+    TimeSplitters1,
+    TimeSplitters2,
+    TimeSplitters3
+}
+
+public enum MediaSource
+{
+    Files,
+    Iso,
+    Disc
+}

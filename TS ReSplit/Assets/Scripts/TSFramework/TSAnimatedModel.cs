@@ -9,8 +9,6 @@ public class TSAnimatedModel : MonoBehaviour {
     public string ModelPath = "ts2/pak/chr.pak/ob/chrs/chr128.raw";
     public Shader Shader;
 
-    int charId = 0;
-
 	void Start ()
     {
         var testFile = TSAssetManager.LoadFile(ModelPath);
@@ -21,15 +19,7 @@ public class TSAnimatedModel : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (Input.GetKeyDown("space"))
-        {
-            /*var fileInfo     = charFiles[charId];
-            LoadTs2Model(fileInfo);
 
-            Debug.Log($"Char: {fileInfo.Name}");
-
-            charId++;*/
-        }
     }
 
     public void LoadTs2Model(string ModelPath)

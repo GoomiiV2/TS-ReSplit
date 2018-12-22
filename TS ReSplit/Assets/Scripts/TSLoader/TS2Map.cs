@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using TS;
 
@@ -46,17 +47,20 @@ namespace TS2
 
                     if (sectionInfo.DataOffset != 0)
                     {
-                        LoadSection(r, sectionInfo);
+                        LoadSection(r, sectionInfo, i);
                     }
                 }
 
-                var boxesOffset = sectionInfos[sectionInfos.Length - 2].DataOffset + 48;
-                LoadVisPortals(r, boxesOffset, 50);
+                // Feels a bit hacky
+                var visPortalsOffset = sectionInfos[sectionInfos.Length - 2].DataOffset;
+                var visPortalsLength = sectionInfos[2].LinksOffset - visPortalsOffset;
+                LoadVisPortals(r, visPortalsOffset, visPortalsLength);
 
                 PortalDoors = LoadPortalDoors(r, entityDefOffset);
 
                 // Scan the rest of the file for positions
-                //PossablePositions = Utils.ScanForVector3(r, -200.0f, 200.0f);
+
+                PossablePositions = Utils.ScanForVector3(r, -200.0f, 200.0f, 2112332);
 
                 // Some section related points
                 /*
@@ -117,17 +121,17 @@ namespace TS2
             }
         }
 
-        private void LoadSection(BinaryReader R, SectionInfo SectionInfo)
+        private void LoadSection(BinaryReader R, SectionInfo SectionInfo, int Index)
         {
             uint offset = SectionInfo.DataOffset - MeshInfo.SIZE;
 
             R.BaseStream.Seek(offset, SeekOrigin.Begin);
             var meshInfo = MeshInfo.Read(R);
-
-            var mesh = Mesh.Load(R, meshInfo);
+            var mesh     = SubMesh.Load(R, meshInfo);
 
             var section = new Section()
             {
+                ID   = Index,
                 Mesh = mesh
             };
 
@@ -160,15 +164,25 @@ namespace TS2
             return info;
         }
 
-        private void LoadVisPortals(BinaryReader R, uint Offset, int NumVisPortals)
+        private void LoadVisPortals(BinaryReader R, uint Offset, uint Size)
         {
+            const int HEADER_SIZE = 48;
             R.BaseStream.Seek(Offset, SeekOrigin.Begin);
-            VisPortals = new List<VisPortal>(NumVisPortals);
+            R.BaseStream.Seek(HEADER_SIZE, SeekOrigin.Current);
 
-            for (int i = 0; i < NumVisPortals; i++)
+            var numPortals = ((Size - HEADER_SIZE) / VisPortal.SIZE);
+            VisPortals     = new List<VisPortal>((int)numPortals);
+
+            var lastPos = R.BaseStream.Position;
+
+            for (int i = 0; i < numPortals; i++)
             {
                 var visPortal = VisPortal.Read(R);
                 VisPortals.Add(visPortal);
+
+                var bytesRead = R.BaseStream.Position - lastPos;
+                lastPos       = R.BaseStream.Position;
+                Debug.WriteLine($"Offset: {R.BaseStream.Position}, read {bytesRead} bytes");
             }
         }
 
@@ -195,6 +209,7 @@ namespace TS2
         }
     }
 
+    [System.Serializable]
     public struct SectionInfo
     {
         public const int SIZE = 176;
@@ -206,9 +221,11 @@ namespace TS2
 
     public struct Section
     {
-        public Mesh Mesh;
+        public int ID;
+        public SubMesh Mesh;
     }
 
+    [System.Serializable]
     public struct VisPortal
     {
         public const int SIZE = 72;
