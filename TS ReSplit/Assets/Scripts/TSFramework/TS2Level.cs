@@ -127,7 +127,7 @@ public class TS2Level : MonoBehaviour
         if (Application.isEditor)
         {
             UnityEngine.Debug.Log("Running inside the editor, tidying up");
-            CreateLevel.RemoveGenratedContent();
+            ClearGenratedContent();
         }
     }
 
@@ -185,7 +185,7 @@ public class TS2Level : MonoBehaviour
 
         var mat                    = new Material(DataAssests.DefaultShader);
         var mats                   = mesh.TexData;
-        meshRender.materials = new Material[mats.Length];
+        meshRender.materials       = new Material[mats.Length];
 
         for (int i = 0; i < meshRender.materials.Length; i++)
         {
@@ -347,6 +347,19 @@ public class TS2Level : MonoBehaviour
         }
 
         LastPrefTime = timeTaken;
+    }
+
+    private void ClearGenratedContent()
+    {
+        const string GEN_BASE_OBJ_NAME = "Level Base";
+
+        var levelBase = GameObject.Find(GEN_BASE_OBJ_NAME);
+
+        if (levelBase != null)
+        {
+            DestroyImmediate(levelBase);
+            ClearGenratedContent(); // Recursive incase their are multiple
+        }
     }
 
     private enum LoadingStage

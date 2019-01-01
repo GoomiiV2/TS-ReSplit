@@ -45,14 +45,14 @@ namespace TS2
             return uids.ToArray();
         }
 
-        public static SubMesh Load(BinaryReader R, MeshInfo Info)
+        public static SubMesh Load(BinaryReader R, MeshInfo Info, bool isMapMesh = false)
         {
             var subMesh = new SubMesh();
             subMesh.Meshes = new Mesh[]
             {
-                Mesh.Load(R, Info.MeshOffsets),
-                Mesh.Load(R, Info.MeshOffsets2),
-                Mesh.Load(R, Info.TransparentMeshOffsets)
+                Mesh.Load(R, Info.MeshOffsets, isMapMesh),
+                Mesh.Load(R, Info.MeshOffsets2, isMapMesh),
+                Mesh.Load(R, Info.TransparentMeshOffsets, isMapMesh)
             };
 
             return subMesh;
@@ -122,18 +122,21 @@ namespace TS2
             return uniqueIds;
         }
 
-        public static Mesh Load(BinaryReader R, MeshInfoOffsets Info)
+        public static Mesh Load(BinaryReader R, MeshInfoOffsets Info, bool IsMapMesh = false)
         {
             if (Info.MatRanges == 0) { return null; }
 
             var mesh               = new Mesh();
 
             // Mat infos
-            var matListSize = Info.Verts - Info.Offset;
-            if (matListSize > 0)
+            if (IsMapMesh)
             {
-                var numMats      = (matListSize) / MatInfo.SIZE;
-                mesh.MatInfos    = MatInfo.ReadMatInfos(R, Info.Offset, (int)numMats);
+                var matListSize = Info.Verts - Info.Offset;
+                if (matListSize > 0)
+                {
+                    var numMats = (matListSize) / MatInfo.SIZE;
+                    mesh.MatInfos = MatInfo.ReadMatInfos(R, Info.Offset, (int)numMats);
+                }
             }
 
             // Verts

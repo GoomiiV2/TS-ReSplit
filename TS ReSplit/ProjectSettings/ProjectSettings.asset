@@ -75,7 +75,7 @@ PlayerSettings:
   Force IOS Speakers When Recording: 0
   deferSystemGesturesMode: 0
   hideHomeButton: 0
-  submitAnalytics: 1
+  submitAnalytics: 0
   usePlayerLog: 1
   bakeCollisionMeshes: 0
   forceSingleInstance: 0
@@ -154,7 +154,7 @@ PlayerSettings:
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1
   aotOptions: 
-  stripEngineCode: 1
+  stripEngineCode: 0
   iPhoneStrippingLevel: 0
   iPhoneScriptCallOptimization: 0
   ForceInternetPermission: 0
@@ -526,7 +526,8 @@ PlayerSettings:
     7: CROSS_PLATFORM_INPUT;MOBILE_INPUT
     14: MOBILE_INPUT
   platformArchitecture: {}
-  scriptingBackend: {}
+  scriptingBackend:
+    Standalone: 0
   il2cppCompilerConfiguration: {}
   managedStrippingLevel: {}
   incrementalIl2cppBuild: {}

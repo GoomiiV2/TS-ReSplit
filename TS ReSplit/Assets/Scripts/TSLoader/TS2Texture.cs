@@ -21,26 +21,39 @@ namespace TS2
         public Texture(byte[] Data)
         {
             Load(Data);
+
+        }
+
+        public static Texture Read(BinaryReader R)
+        {
+            var tex = new Texture();
+            tex.Load(R);
+            return tex;
         }
 
         public void Load(byte[] Data)
         {
             using (BinaryReader r = new BinaryReader(new MemoryStream(Data)))
             {
-                ID     = r.ReadUInt32();
-                UNK    = r.ReadUInt32();
-                Width  = r.ReadInt32();
-                Height = r.ReadInt32();
-
-                Palettle  = new uint[256];
-                var bytes = r.ReadBytes(sizeof(uint) * Palettle.Length);
-                Buffer.BlockCopy(bytes, 0, Palettle, 0, bytes.Length);
-
-                var numPixels = (int)(Width * Height);
-                Pixels        = r.ReadBytes(numPixels);
-
-                Meta.HasAlpha = ScanForAlpha();
+                Load(r);
             }
+        }
+
+        public void Load(BinaryReader R)
+        {
+            ID     = R.ReadUInt32();
+            UNK    = R.ReadUInt32();
+            Width  = R.ReadInt32();
+            Height = R.ReadInt32();
+
+            Palettle  = new uint[256];
+            var bytes = R.ReadBytes(sizeof(uint) * Palettle.Length);
+            Buffer.BlockCopy(bytes, 0, Palettle, 0, bytes.Length);
+
+            var numPixels = (int)(Width * Height);
+            Pixels        = R.ReadBytes(numPixels);
+
+            Meta.HasAlpha = ScanForAlpha();
         }
 
         private bool ScanForAlpha()

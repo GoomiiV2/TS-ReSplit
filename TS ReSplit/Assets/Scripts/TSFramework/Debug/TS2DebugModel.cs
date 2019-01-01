@@ -122,13 +122,13 @@ namespace TSDebug
                 for (int i = 0; i < Ts2Model.Meshes.Length; i++)
                 {
                     var mesh = Ts2Model.Meshes[i];
-                    DrawMesh(mesh);
+                    //DrawMesh(mesh);
                 }
             }
             else
             {
                 var mesh = Ts2Model.Meshes[MeshToDraw];
-                DrawMesh(mesh);
+                //DrawMesh(mesh);
             }
         }
 

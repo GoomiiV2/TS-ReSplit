@@ -314,7 +314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80400f521f59b4f49971f4582a4df54f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  PakFile: ts2/pak/story/l_35_ST.pak
+  PakFile: ts2/pak/chr.pak
   GridSpacing: 2
   NumPerRow: 10
 --- !u!4 &753569148

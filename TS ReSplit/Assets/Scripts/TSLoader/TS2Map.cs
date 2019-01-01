@@ -127,7 +127,7 @@ namespace TS2
 
             R.BaseStream.Seek(offset, SeekOrigin.Begin);
             var meshInfo = MeshInfo.Read(R);
-            var mesh     = SubMesh.Load(R, meshInfo);
+            var mesh     = SubMesh.Load(R, meshInfo, false);
 
             var section = new Section()
             {

@@ -10,19 +10,6 @@ using UnityEngine;
 public static class TSMeshUtils
 {
 
-    /*public static Mesh SubMeshToMesh(TS2.SubMesh TS2SubMesh)
-    {
-        var meshes = new List<CombineInstance>();
-        if (TS2SubMesh.MainMesh != null)            { meshes.Add(new CombineInstance() { mesh = TS2MeshToMesh(TS2SubMesh.MainMesh), subMeshIndex = meshes.Count });          }
-        if (TS2SubMesh.SecondaryMesh != null)       { meshes.Add(new CombineInstance() { mesh = TS2MeshToMesh(TS2SubMesh.SecondaryMesh), subMeshIndex = meshes.Count });     }
-        if (TS2SubMesh.TransparentMesh != null)     { meshes.Add(new CombineInstance() { mesh = TS2MeshToMesh(TS2SubMesh.TransparentMesh), subMeshIndex = meshes.Count });   }
-
-        var mesh = new Mesh();
-        mesh.CombineMeshes(meshes.ToArray(), false, false, false);
-
-        return mesh;
-    }*/
-
     public static MeshData SubMeshToMesh(TS2.SubMesh TS2SubMesh)
     {
         return SubMeshToMesh(TS2SubMesh, MeshCreationData.Defaults);
@@ -30,61 +17,108 @@ public static class TSMeshUtils
 
     public static MeshData SubMeshToMesh(TS2.SubMesh TS2SubMesh, MeshCreationData Options)
     {
+        var meshArr = new TS2.SubMesh[] { TS2SubMesh };
+        return SubMeshToMesh(meshArr, Options);
+    }
+
+    // TODO: prob a good canadate for a tidy up and refactor
+    public static MeshData SubMeshToMesh(TS2.SubMesh[] TS2SubMesh, MeshCreationData Options)
+    {
         var mesh              = new Mesh();
         var verts             = new List<Vector3>();
         var uvs               = new List<Vector2>();
         var normals           = new List<Vector3>();
         var texData           = new List<(MeshTexMeta, List<int> Indices)>();
+        var weights           = new List<BoneWeight>();
         var lastIndiceId      = 0;
 
 
-        for (int i = 0; i < TS2SubMesh.Meshes.Length; i++)
+        for (int aye = 0; aye < TS2SubMesh.Length; aye++)
         {
-            var subMeshMesh    = TS2SubMesh.Meshes[i];
+            var currMesh = TS2SubMesh[aye];
 
-            if (subMeshMesh != null
-                    && ((   TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.MainMesh           && Options.CreateMainMesh
-                        || (TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.SecondaryMesh      && Options.CreateOverlaysMesh
-                        || (TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.TransparentMesh    && Options.CreateTransparentMesh)
-                )
+            for (int i = 0; i < currMesh.Meshes.Length; i++)
             {
-                var indices        = new Dictionary<int, List<int>>();
-                var rawData        = TS2MeshToRawSubMeshe(subMeshMesh, verts.Count);
+                var subMeshMesh = currMesh.Meshes[i];
 
-                for (int eye = 0; eye < rawData.SubMeshs.Length; eye++)
+                if (subMeshMesh != null
+                        && ((   TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.MainMesh           && Options.CreateMainMesh
+                            || (TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.SecondaryMesh      && Options.CreateOverlaysMesh
+                            || (TS2.SubMesh.MeshIds)i == TS2.SubMesh.MeshIds.TransparentMesh    && Options.CreateTransparentMesh)
+                    )
                 {
-                    var data = rawData.SubMeshs[eye];
-                    if (indices.ContainsKey(data.MatID)) {
-                        indices[data.MatID].AddRange(data.Indices);
+                    var indices        = new Dictionary<int, List<int>>();
+                    var rawData        = TS2MeshToRawSubMeshe(subMeshMesh, verts.Count);
+
+                    for (int eye = 0; eye < rawData.SubMeshs.Length; eye++)
+                    {
+                        var data = rawData.SubMeshs[eye];
+                        if (indices.ContainsKey(data.MatID)) {
+                            indices[data.MatID].AddRange(data.Indices);
+                        }
+                        else {
+                            indices.Add(data.MatID, data.Indices);
+                        }
                     }
-                    else {
-                        indices.Add(data.MatID, data.Indices);
+
+                    verts.AddRange(rawData.Verts);
+                    uvs.AddRange(rawData.Uvs);
+                    normals.AddRange(rawData.Normals);
+
+                    if (Options.IsSkeletalMesh)
+                    {
+                        var meshWeights = rawData.Weights.Select(x => new BoneWeight()
+                        {
+                            boneIndex0 = aye,
+                            weight0 = x
+                        });
+                        weights.AddRange(meshWeights);
                     }
+
+                    // Texture data
+                    var indiceData = indices.Select((x, idx) => (new MeshTexMeta()
+                    {
+                        Idx           = lastIndiceId + idx,
+                        TexId         = x.Key,
+                        IsTransparent = (i != (int)TS2.SubMesh.MeshIds.MainMesh)
+                    }, x.Value)).ToArray();
+
+                    texData.AddRange(indiceData);
+
+                    lastIndiceId += indiceData.Count();
                 }
-
-                verts.AddRange(rawData.Verts);
-                uvs.AddRange(rawData.Uvs);
-                normals.AddRange(rawData.Normals);
-
-                // Texture data
-                var indiceData = indices.Select((x, idx) => (new MeshTexMeta()
-                {
-                    Idx           = lastIndiceId + idx,
-                    TexId         = x.Key,
-                    IsTransparent = (i != (int)TS2.SubMesh.MeshIds.MainMesh)
-                }, x.Value)).ToArray();
-
-                texData.AddRange(indiceData);
-
-                lastIndiceId += indiceData.Count();
             }
         }
 
         mesh.SetVertices(verts);
+        mesh.SetNormals(normals);
         mesh.SetUVs(0, uvs);
 
+        if (Options.IsSkeletalMesh)
+        {
+            mesh.boneWeights = weights.ToArray();
+        }
+
+        //TODO: tidy up
+        if (!Options.IsMapMesh) // Models need the ids to be in order and can have
+        {
+            var mergedIndices = new List<(MeshTexMeta, List<int> Indices)>();
+            foreach (var tData in texData.GroupBy(x => x.Item1.TexId))
+            {
+                var indices = tData.SelectMany(x => x.Indices);
+                mergedIndices.Add((new MeshTexMeta()
+                {
+                    Idx           = mergedIndices.Count(),
+                    TexId         = tData.First().Item1.TexId,
+                    IsTransparent = tData.First().Item1.IsTransparent
+                }, indices.ToList()));
+            }
+
+            texData = mergedIndices.OrderBy(x => x.Item1.TexId).ToList();
+        }
+
         var orderedIndices = texData.Select(x => x.Indices).ToArray();
-        mesh.subMeshCount = orderedIndices.Length;
+        mesh.subMeshCount  = orderedIndices.Length;
 
         for (int i = 0; i < orderedIndices.Length; i++)
         {
@@ -92,14 +126,17 @@ public static class TSMeshUtils
             mesh.SetTriangles(meshMat, i);
         }
 
-        mesh.RecalculateNormals();
-
-        if (mesh.vertices != null && mesh.vertices.Count() > 0)
+        if (Options.IsMapMesh)
         {
-            Unwrapping.GenerateSecondaryUVSet(mesh);
+            mesh.RecalculateNormals();
+            if (Options.IsMapMesh && mesh.vertices != null && mesh.vertices.Count() > 0)
+            {
+                Unwrapping.GenerateSecondaryUVSet(mesh);
+            }
         }
 
         MeshUtility.Optimize(mesh);
+        //AutoWeld(mesh, 0.0001f, 1.0f);
         mesh.UploadMeshData(true);
 
         var meshData = new MeshData()
@@ -181,7 +218,7 @@ public static class TSMeshUtils
 
     // TODO: merge uvs into an atlas and avoid the sub meshes
     // and reduce code duplication
-    public static Mesh TS2ModelToMesh(TS2.Model Model)
+    /*public static Mesh TS2ModelToMesh(TS2.Model Model)
     {
         var mesh           = new Mesh();
         var verts          = new List<Vector3>();
@@ -226,6 +263,18 @@ public static class TSMeshUtils
         mesh.UploadMeshData(false);
 
         return mesh;
+    }*/
+
+    public static Mesh TS2ModelToMesh(TS2.Model Model)
+    {
+        var data = SubMeshToMesh(Model.Meshes, new MeshCreationData()
+        {
+            CreateMainMesh        = true,
+            CreateOverlaysMesh    = true,
+            CreateTransparentMesh = true
+        });
+
+        return data.Mesh;
     }
 
     // Take a TS2Mesh and return a simple intermediate objebt for later conversions
@@ -235,6 +284,7 @@ public static class TSMeshUtils
         var uvsList     = new List<Vector2>();
         var normalsList = new List<Vector3>();
         var subMeshs    = new List<SubMeshData>();
+        var weights     = new List<float>();
 
         if (TS2Mesh.Verts.Length > 0)
         {
@@ -253,6 +303,7 @@ public static class TSMeshUtils
 
                     vertsList.Add(Ts2VertToV3(vert));
                     uvsList.Add(Ts2UVWToV2(uv));
+                    weights.Add(uv.W);
 
                     if (TS2Mesh.Normals.Length > 0)
                     {
@@ -290,7 +341,7 @@ public static class TSMeshUtils
                 var subMesh = new SubMeshData() {
                     ID      = subMeshData.ID,
                     MatID   = subMeshData.MatID,
-                    Indices = subMeshIndices
+                    Indices = subMeshIndices    
                 };
 
                 subMeshs.Add(subMesh);
@@ -305,7 +356,8 @@ public static class TSMeshUtils
             Verts    = vertsList.ToArray(),
             Uvs      = uvsList.ToArray(),
             Normals  = normalsList.ToArray(),
-            SubMeshs = subMeshs.ToArray()
+            SubMeshs = subMeshs.ToArray(),
+            Weights  = weights.ToArray()
         };
 
         return data;
@@ -334,6 +386,82 @@ public static class TSMeshUtils
         return v3;
     }
 
+    public static void AutoWeld(Mesh mesh, float threshold, float bucketStep)
+    {
+        Vector3[] oldVertices = mesh.vertices;
+        Vector3[] newVertices = new Vector3[oldVertices.Length];
+        int[] old2new = new int[oldVertices.Length];
+        int newSize = 0;
+
+        // Find AABB
+        Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+        for (int i = 0; i < oldVertices.Length; i++)
+        {
+            if (oldVertices[i].x < min.x) min.x = oldVertices[i].x;
+            if (oldVertices[i].y < min.y) min.y = oldVertices[i].y;
+            if (oldVertices[i].z < min.z) min.z = oldVertices[i].z;
+            if (oldVertices[i].x > max.x) max.x = oldVertices[i].x;
+            if (oldVertices[i].y > max.y) max.y = oldVertices[i].y;
+            if (oldVertices[i].z > max.z) max.z = oldVertices[i].z;
+        }
+
+        // Make cubic buckets, each with dimensions "bucketStep"
+        int bucketSizeX = Mathf.FloorToInt((max.x - min.x) / bucketStep) + 1;
+        int bucketSizeY = Mathf.FloorToInt((max.y - min.y) / bucketStep) + 1;
+        int bucketSizeZ = Mathf.FloorToInt((max.z - min.z) / bucketStep) + 1;
+        List<int>[,,] buckets = new List<int>[bucketSizeX, bucketSizeY, bucketSizeZ];
+
+        // Make new vertices
+        for (int i = 0; i < oldVertices.Length; i++)
+        {
+            // Determine which bucket it belongs to
+            int x = Mathf.FloorToInt((oldVertices[i].x - min.x) / bucketStep);
+            int y = Mathf.FloorToInt((oldVertices[i].y - min.y) / bucketStep);
+            int z = Mathf.FloorToInt((oldVertices[i].z - min.z) / bucketStep);
+
+            // Check to see if it's already been added
+            if (buckets[x, y, z] == null)
+                buckets[x, y, z] = new List<int>(); // Make buckets lazily
+
+            for (int j = 0; j < buckets[x, y, z].Count; j++)
+            {
+                Vector3 to = newVertices[buckets[x, y, z][j]] - oldVertices[i];
+                if (Vector3.SqrMagnitude(to) < threshold)
+                {
+                    old2new[i] = buckets[x, y, z][j];
+                    goto skip; // Skip to next old vertex if this one is already there
+                }
+            }
+
+            // Add new vertex
+            newVertices[newSize] = oldVertices[i];
+            buckets[x, y, z].Add(newSize);
+            old2new[i] = newSize;
+            newSize++;
+
+            skip:;
+        }
+
+        // Make new triangles
+        int[] oldTris = mesh.triangles;
+        int[] newTris = new int[oldTris.Length];
+        for (int i = 0; i < oldTris.Length; i++)
+        {
+            newTris[i] = old2new[oldTris[i]];
+        }
+
+        Vector3[] finalVertices = new Vector3[newSize];
+        for (int i = 0; i < newSize; i++)
+            finalVertices[i] = newVertices[i];
+
+        mesh.Clear();
+        mesh.vertices = finalVertices;
+        mesh.triangles = newTris;
+        mesh.RecalculateNormals();
+        //mesh.Optimize();
+    }
+
 }
 
 public class RawMeshData
@@ -342,6 +470,7 @@ public class RawMeshData
     public Vector2[]            Uvs;
     public Vector3[]            Normals;
     public SubMeshData[]        SubMeshs;
+    public float[]              Weights;
 }
 
 public struct SubMeshData
@@ -369,11 +498,15 @@ public struct MeshCreationData
     public bool CreateMainMesh;
     public bool CreateOverlaysMesh;
     public bool CreateTransparentMesh;
+    public bool IsMapMesh;
+    public bool IsSkeletalMesh;
 
     public static readonly MeshCreationData Defaults = new MeshCreationData()
     {
         CreateMainMesh        = true,
         CreateOverlaysMesh    = true,
-        CreateTransparentMesh = true
+        CreateTransparentMesh = true,
+        IsMapMesh             = true,
+        IsSkeletalMesh = false
     };
 }

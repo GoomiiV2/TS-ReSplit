@@ -11,7 +11,12 @@ namespace TS2
     {
         public static uint SIZE = 144;
 
+        public byte Unk1;
+        public byte Unk2;
+        public byte Unk3;
         public byte ID;
+        public byte Unk4;
+        public byte Unk5;
         public MeshInfoOffsets MeshOffsets;
         public MeshInfoOffsets MeshOffsets2;
         public MeshInfoOffsets TransparentMeshOffsets;
@@ -20,10 +25,14 @@ namespace TS2
         {
             var meshInfo = new MeshInfo();
 
-            R.BaseStream.Seek(3, SeekOrigin.Current);
-            meshInfo.ID = R.ReadByte();
+            meshInfo.Unk1 = R.ReadByte();
+            meshInfo.Unk2 = R.ReadByte();
+            meshInfo.Unk3 = R.ReadByte();
+            meshInfo.ID   = R.ReadByte();
+            meshInfo.Unk4 = R.ReadByte();
+            meshInfo.Unk5 = R.ReadByte();
 
-            R.BaseStream.Seek(16, SeekOrigin.Current);
+            R.BaseStream.Seek(14, SeekOrigin.Current);
             var MatIdOffset      = R.ReadUInt32();
             var MatIdOffset2     = R.ReadUInt32();
             var MatIdOffset3     = R.ReadUInt32();
@@ -37,7 +46,7 @@ namespace TS2
             meshInfo.MeshOffsets2.MatRanges           = MatIdOffset2;
             meshInfo.TransparentMeshOffsets.MatRanges = MatIdOffset3;
 
-            R.BaseStream.Seek(30, SeekOrigin.Current);
+            R.BaseStream.Seek(48, SeekOrigin.Current);
 
             return meshInfo;
         }

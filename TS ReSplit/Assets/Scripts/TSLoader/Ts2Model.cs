@@ -8,7 +8,11 @@ namespace TS2
     public class Model
     {
         public MatInfo[] Materials;
-        public Mesh[] Meshes;
+        public SubMesh[] Meshes;
+        public Texture[] Textures;
+        public MeshInfo[] MeshInfos;
+
+        public bool HasIncludedTextures { get { return Textures != null; } }
 
         public Model() { }
 
@@ -19,6 +23,8 @@ namespace TS2
 
         public void Load(byte[] Data)
         {
+            const uint MODEL_INFO_SIZE = 48;
+
             using (BinaryReader r = new BinaryReader(new MemoryStream(Data)))
             {
                 uint materialInfoOffset = r.ReadUInt32();
@@ -26,6 +32,18 @@ namespace TS2
 
                 LoadMatInfos(r, materialInfoOffset);
                 LoadMeshes(r, infoOffset);
+
+                // if there is more data, should be textures included in the model
+                uint includedTexOffset = infoOffset + MODEL_INFO_SIZE;
+                if (r.BaseStream.Length > includedTexOffset)
+                {
+                    LoadTextures(r, includedTexOffset);
+                }
+            }
+
+            foreach (var mesh in Meshes)
+            {
+
             }
         }
 
@@ -52,21 +70,27 @@ namespace TS2
                 meshInfos.Add(meshInfo);
             }
 
-            /*var meshes = new List<Mesh>();
+            var meshes = new List<SubMesh>();
             foreach (var meshInfo in meshInfos)
             {
-                var mesh = Mesh.Load(R, meshInfo);
+                var mesh = SubMesh.Load(R, meshInfo);
                 meshes.Add(mesh);
-            }*/
+            }
 
-            //Meshes = meshes.ToArray();
+            Meshes    = meshes.ToArray();
+            MeshInfos = meshInfos.ToArray();
+        }
+
+        private void LoadTextures(BinaryReader R, uint Offset)
+        {
+            R.BaseStream.Seek(Offset, SeekOrigin.Begin);
+            Textures = new Texture[Materials.Length];
+
+            for (int i = 0; i < Textures.Length; i++)
+            {
+                var tex     = Texture.Read(R);
+                Textures[i] = tex;
+            }
         }
     }
-
-    public class ModelHeader
-    {
-        public uint MaterialInfoOffset;
-        public uint InfoOffset;
-    }
-
 }

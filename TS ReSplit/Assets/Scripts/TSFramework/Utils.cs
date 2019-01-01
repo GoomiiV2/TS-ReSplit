@@ -74,5 +74,18 @@ namespace Assets.Scripts.TSFramework
 
             return newRotation;
         }
+
+        public static Vector3 GetCenterOfPoints(List<Vector3> Positions)
+        {
+            var averagePos = new Vector3();
+
+            foreach (var pos in Positions)
+            {
+                averagePos += pos;
+            }
+
+            averagePos = averagePos / Positions.Count;
+            return averagePos;
+        }
     }
 }
