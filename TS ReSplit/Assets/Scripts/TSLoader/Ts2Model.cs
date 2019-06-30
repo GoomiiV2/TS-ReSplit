@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using UnityEngine;
 
 namespace TS2
 {
@@ -11,6 +10,8 @@ namespace TS2
         public SubMesh[] Meshes;
         public Texture[] Textures;
         public MeshInfo[] MeshInfos;
+
+        public float Scale;
 
         public bool HasIncludedTextures { get { return Textures != null; } }
 
@@ -57,7 +58,10 @@ namespace TS2
         {
             R.BaseStream.Seek(Offset, SeekOrigin.Begin);
 
-            uint meshCount         = R.ReadUInt32();
+            uint meshCount = R.ReadUInt32();
+            R.BaseStream.Seek(36, SeekOrigin.Current);
+            Scale = R.ReadSingle();
+
             uint meshInfoChunkSize = meshCount * MeshInfo.SIZE;
             uint meshInfoOffset    = Offset - meshInfoChunkSize;
 

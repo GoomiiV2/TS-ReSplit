@@ -6,20 +6,50 @@ using System.Linq;
 using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
+using TS2Data;
 
+[ExecuteInEditMode]
 public class TSAnimatedModel : MonoBehaviour {
     public string ModelPath = "ts2/pak/chr.pak/ob/chrs/chr128.raw";
     public Shader Shader;
     public Material DefaultMaterial;
 
-    private TS2.Model TS2Model;
+    public AnimationClip TestAnimation;
 
-    void Start ()
+    private TS2.Model TS2Model;
+    private TS2Bone[] Bones;
+
+    const string BONE_PREFIX = "Bone ";
+
+    void Start()
     {
         var testFile = TSAssetManager.LoadFile(ModelPath);
         Shader = Shader.Find("Custom/BasicChrShader");
 
         LoadTs2Model(ModelPath);
+        Bones = TSAnimationUtils.BuildTS2Skelation(TS2Model);
+
+        var playerModelData = ModelDB.Get(ModelType.Player, PlayerModels.Viola);
+
+        Animation anim = GetComponent<Animation>();
+        
+        var clips = new string[] {
+            "ts2/pak/anim.pak/anim/data/ts2/scratchhead.raw",
+            //"ts2/pak/anim.pak/anim/data/ts2/peek_m0.raw",
+            "ts2/pak/anim.pak/anim/data/ts2/scientist_defusebomb_m0.raw",
+            //"ts2/pak/anim.pak/anim/data/ts2/hit_1_m0.raw",
+            "ts2/pak/anim.pak/anim/data/ts2/sholdershot2_m0.raw"
+        };
+
+        foreach (var clip in clips)
+        {
+            var animFile = TSAssetManager.LoadFile(clip);
+            var animData = new TS2.Animation(animFile);
+            var animClip = TSAnimationUtils.ConvertAnimation(animData, playerModelData.Skeleton.Value, clip);
+
+            anim.AddClip(animClip, animClip.name);
+            anim.PlayQueued(clip);
+        }
     }
 	
 	// Update is called once per frame
@@ -30,9 +60,17 @@ public class TSAnimatedModel : MonoBehaviour {
     [ExecuteInEditMode]
     void OnDrawGizmos()
     {
-        DrawBones();
+#if UNITY_EDITOR
+        if (TS2Model == null)
+        {
+            Start();
+        }
+#endif
+
+        //DrawMeshConnections();
         //DisplayVertWeights();
         //DrawVertFlags();
+        //DrawDebugSkelation();
     }
 
     public void LoadTs2Model(string ModelPath)
@@ -46,6 +84,7 @@ public class TSAnimatedModel : MonoBehaviour {
         var texPaths     = TSTextureUtils.GetTexturePathsForMats(TS2Model.Materials);
         var mat          = new Material(Shader);
 
+        var playerModelData = ModelDB.Get(ModelType.Player, PlayerModels.Viola);
         var data = TSMeshUtils.SubMeshToMesh(TS2Model.Meshes, new MeshCreationData()
         {
             CreateMainMesh        = true,
@@ -53,7 +92,8 @@ public class TSAnimatedModel : MonoBehaviour {
             CreateTransparentMesh = true,
             IsMapMesh             = false,
             IsSkeletalMesh        = true
-        });
+        },
+        playerModelData);
 
         meshRender.materials = new Material[data.TexData.Length];
 
@@ -80,19 +120,43 @@ public class TSAnimatedModel : MonoBehaviour {
             meshRender.materials[i].mainTexture = unityTex;
         }
 
-        //meshRender.materials = null;
+        // If running in the editor remove existing bones first
+#if UNITY_EDITOR
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            var child = transform.GetChild(i);
+            //if (child.name.StartsWith(TSAnimationUtils.BONE_PREFIX))
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+#endif
 
-        var bones        = CreateSkelation(data.Mesh, TS2Model);
-        meshRender.bones = bones;
+        var bones          = TSAnimationUtils.CreateModelBindPose(transform.gameObject, playerModelData, data.Mesh, TS2Model.Scale);
+        meshRender.bones   = bones;
 
+        meshRender.hideFlags  = HideFlags.DontSave;
         meshRender.sharedMesh = data.Mesh;
+        meshFilter.hideFlags  = HideFlags.DontSave;
         meshFilter.mesh       = data.Mesh;
     }
 
     private Transform[] CreateSkelation(Mesh Mesh, TS2.Model Model)
     {
-        var bones    = new List<Transform>();
+        var bones     = new List<Transform>();
         var bindPoses = new List<Matrix4x4>();
+
+        // If running in the editor remove existing bones first
+#if UNITY_EDITOR
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            var child = transform.GetChild(i);
+            if (child.name.StartsWith(BONE_PREFIX))
+            {
+                DestroyImmediate(child.gameObject);
+            }
+        }
+#endif
 
         for (int i = 0; i < Model.MeshInfos.Length; i++)
         {
@@ -109,11 +173,12 @@ public class TSAnimatedModel : MonoBehaviour {
                 pos = centerPoint;
             }
 
-            Transform bone = new GameObject($"Bone {i}").transform;
-            bone.parent = transform;
+            var debugText = $"{meshInfo.IsBone} - {meshInfo.Unk2} - {meshInfo.ParentIdx} - {meshInfo.ChildIdx} - {meshInfo.Unk4} - {meshInfo.Unk5}";
+            Transform bone     = new GameObject($"{BONE_PREFIX}{i} ({debugText})") { hideFlags = HideFlags.DontSave }.transform;
+            bone.parent        = transform;
             bone.localRotation = Quaternion.identity;
             bone.localPosition = pos;
-            if (meshInfo.Unk3 != 0xFF) { bone.parent = bones[meshInfo.Unk3]; }
+            if (meshInfo.ParentIdx != 0xFF) { bone.parent = bones[meshInfo.ParentIdx]; }
             bones.Add(bone);
 
             Matrix4x4 bindPose = bone.worldToLocalMatrix * transform.localToWorldMatrix;
@@ -133,7 +198,7 @@ public class TSAnimatedModel : MonoBehaviour {
     }
 
     [Conditional("UNITY_EDITOR")]
-    private void DrawBones()
+    private void DrawMeshConnections()
     {
         if (TS2Model != null)
         {
@@ -150,22 +215,25 @@ public class TSAnimatedModel : MonoBehaviour {
                     var points = mesh.MainMesh.Verts.Select(x => TSMeshUtils.Ts2VertToV3(x)).ToList();
                     var centerPoint = Utils.GetCenterOfPoints(points);
 
+                    if (points.Count == 0)
+                    {
+                        centerPoint = bones[meshInfo.ParentIdx].Pos;
+                    }
+
                     var pos = transform.position + centerPoint;
 
                     var bone = new TSBone()
                     {
-                        Unk1 = meshInfo.Unk1,
+                        Unk1 = meshInfo.IsBone,
                         Unk2 = meshInfo.Unk2,
-                        Unk3 = meshInfo.Unk3,
-                        Unk4 = meshInfo.ID,
+                        Unk3 = meshInfo.ParentIdx,
+                        Unk4 = meshInfo.ChildIdx,
                         Unk5 = meshInfo.Unk4,
                         Unk6 = meshInfo.Unk5,
                         Pos  = pos
                     };
 
                     bones.Add(bone);
-
-                    Gizmos.DrawSphere(pos, 0.02f);
 
                     /*var boneLabel   = $"Idx: {i}, {meshInfo.Unk1} - {meshInfo.Unk2} - {meshInfo.Unk3} - {meshInfo.ID}";
                     Handles.Label(pos, boneLabel);*/
@@ -176,10 +244,10 @@ public class TSAnimatedModel : MonoBehaviour {
 
                     var bone = new TSBone()
                     {
-                        Unk1 = meshInfo.Unk1,
+                        Unk1 = meshInfo.IsBone,
                         Unk2 = meshInfo.Unk2,
-                        Unk3 = meshInfo.Unk3,
-                        Unk4 = meshInfo.ID,
+                        Unk3 = meshInfo.ParentIdx,
+                        Unk4 = meshInfo.ChildIdx,
                         Unk5 = meshInfo.Unk4,
                         Unk6 = meshInfo.Unk5,
                         Pos  = transform.position
@@ -193,11 +261,11 @@ public class TSAnimatedModel : MonoBehaviour {
             {
                 var bone = bones[i];
 
-                if (bone.Unk4 != 0xFF)
+                /*if (bone.Unk4 != 0xFF)
                 {
                     var connectedTo = bones[bone.Unk4];
-                    UnityEngine.Debug.DrawLine(bone.Pos + (Vector3.left * 2), connectedTo.Pos + (Vector3.left * 2), Color.blue);
-                }
+                    UnityEngine.Debug.DrawLine(bone.Pos, connectedTo.Pos, Color.blue);
+                }*/
 
                 if (bone.Unk3 != 0xFF)
                 {
@@ -207,25 +275,26 @@ public class TSAnimatedModel : MonoBehaviour {
                 /*if (bone.Unk2 != 0xFF)
                 {
                     Debug.DrawLine(bone.Pos, bones[bone.Unk2].Pos, Color.green);
-                }*/file:///C:/Users/Arkii/Downloads/fmt_lithTech_dat.py
+                }*/
 
                 /*if (bone.Unk1 != 0xFF)
                 {
                     Debug.DrawLine(bone.Pos, bones[bone.Unk1].Pos, Color.green);
                 }*/
 
-                var boneLabel = $"Idx: {i}, {bone.Unk1} - {bone.Unk2} - {bone.Unk3} - {bone.Unk4} - {bone.Unk5} - {bone.Unk6}";
-                Handles.Label(bone.Pos, boneLabel,
+                //var boneLabel = $"Idx: {i}, {bone.Unk1} - {bone.Unk2} - {bone.Unk3} - {bone.Unk4} - {bone.Unk5} - {bone.Unk6}";
+                var boneLabel = $"Idx: {i}";
+                Handles.Label(bone.Pos + (Vector3.up * 0.00002f), boneLabel,
                     new GUIStyle() {
                         alignment = TextAnchor.MiddleCenter,
                         normal = new GUIStyleState() {
                             textColor = Color.white,
                         },
-                        fontSize = 6
+                        fontSize = 10
                     });
 
-                Gizmos.color = new Color32(224, 51, 94, 255);
-                Gizmos.DrawSphere(bone.Pos, 0.002f);
+                Gizmos.color = new Color32(224, 51, 94, 150);
+                Gizmos.DrawWireSphere(bone.Pos, 0.02f);
             }
         }
 
@@ -272,6 +341,22 @@ public class TSAnimatedModel : MonoBehaviour {
 
                     Handles.Label(pos, $"{vert.Scale}");
                 }
+            }
+        }
+    }
+
+    [Conditional("UNITY_EDITOR")]
+    private void DrawDebugSkelation()
+    {
+        if (Bones != null)
+        {
+            for (int i = 0; i < Bones.Length; i++)
+            {
+                var bone     = Bones[i];
+                var pos      = transform.position + bone.Position;
+                Gizmos.color = Color.yellow;
+                //Gizmos.DrawSphere(pos, 0.02f);
+                Handles.Label(pos, $"{bone.ID} [{string.Join(", ", bone.MeshSections.ToArray())}]");
             }
         }
     }

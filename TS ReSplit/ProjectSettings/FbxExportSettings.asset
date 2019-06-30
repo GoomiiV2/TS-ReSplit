@@ -22,14 +22,14 @@
         "dccOptionNames": [],
         "dccOptionPaths": [],
         "exportModelSettingsSerialize": {
-            "exportFormat": 0,
+            "exportFormat": 1,
             "rootMotionTransfer": "",
             "animatedSkinnedMesh": true,
             "mayaCompatibleNaming": true,
-            "include": 2,
+            "include": 0,
             "lodLevel": 0,
-            "objectPosition": 0,
-            "exportUnrendered": true
+            "objectPosition": 1,
+            "exportUnrendered": false
         },
         "convertToPrefabSettingsSerialize": {
             "exportFormat": 0,

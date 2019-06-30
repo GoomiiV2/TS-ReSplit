@@ -120,6 +120,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 3330115997250126106, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
+        type: 3}
+      propertyPath: m_Name
+      value: LevelManager
+      objectReference: {fileID: 0}
     - target: {fileID: 3330115997250126104, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -174,11 +179,6 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 3330115997250126106, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
-        type: 3}
-      propertyPath: m_Name
-      value: LevelManager
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0c2ab0240bc9c7049bcfad7fc251deaa, type: 3}
@@ -258,7 +258,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 1.54, y: 3.76, z: -4.62}
+  m_LocalPosition: {x: 0.56, y: 3.76, z: -4.62}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -367,6 +367,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ModelPath: ts2/pak/chr.pak/ob/chrs/chr28.raw
   Shader: {fileID: 4800000, guid: 9bdb7faa92513d643970d79276cb763d, type: 3}
+  DefaultMaterial: {fileID: 0}
+  TestAnimation: {fileID: 0}
 --- !u!4 &1002858676
 Transform:
   m_ObjectHideFlags: 0

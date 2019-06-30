@@ -53,7 +53,7 @@ public class ModelGridSpawner : MonoBehaviour
     {
         var gameObject = new GameObject(ModelPath);
         gameObject.AddComponent<MeshFilter>();
-        gameObject.AddComponent<MeshRenderer>();
+        gameObject.AddComponent<SkinnedMeshRenderer>();
         var ts2AnimatedModel = gameObject.AddComponent<TSAnimatedModel>();
 
         ts2AnimatedModel.ModelPath    = ModelPath;

@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2048
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Splitter", "ReSplit Tools\Splitter.csproj", "{9801BD48-EB34-41FF-B885-637C98CF421B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Splitter", "ReSplit Tools\Splitter.csproj", "{9801BD48-EB34-41FF-B885-637C98CF421B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ts2MeshGrapher", "Ts2MeshGrapher\Ts2MeshGrapher.csproj", "{A32F8778-4144-42B9-8075-1FE3A77785B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{9801BD48-EB34-41FF-B885-637C98CF421B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9801BD48-EB34-41FF-B885-637C98CF421B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9801BD48-EB34-41FF-B885-637C98CF421B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A32F8778-4144-42B9-8075-1FE3A77785B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A32F8778-4144-42B9-8075-1FE3A77785B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A32F8778-4144-42B9-8075-1FE3A77785B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A32F8778-4144-42B9-8075-1FE3A77785B9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

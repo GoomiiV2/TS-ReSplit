@@ -2,7 +2,7 @@
   "profiles": {
     "Splitter": {
       "commandName": "Project",
-      "commandLineArgs": "-i \"G:\\Projects2\\Code\\Timesplitters FP framework\\Temp\\l_35_ST.pak - Copy\" -o \"G:\\Projects2\\Code\\Timesplitters FP framework\\Unity Project\\Data\\ts2\\pak\\story/l_35_ST.pak\" -p P4CK -m \"G:\\Projects2\\Code\\Timesplitters FP framework\\Unity Project\\Data/l_35_ST_Manifest.json\""
+      "commandLineArgs": "-i  \"F:\\Projects2\\Code\\Timesplitters FP framework\\Isos\\TimeSplitters\\Extracted\\PAK/bg.pak\" -o \"F:\\Projects2\\Code\\Timesplitters FP framework\\Temp\\ts1\" -e"
     }
   }
 }

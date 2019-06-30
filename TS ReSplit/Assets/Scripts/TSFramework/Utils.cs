@@ -87,5 +87,30 @@ namespace Assets.Scripts.TSFramework
             averagePos = averagePos / Positions.Count;
             return averagePos;
         }
+
+        public static Bounds CalcNavMeshBounds()
+        {
+            var navVerts = UnityEngine.AI.NavMesh.CalculateTriangulation().vertices;
+            var bounds = new Bounds();
+            for (int i = 0; i < navVerts.Length; i++)
+            {
+                var vert = navVerts[i];
+                bounds.Encapsulate(vert);
+            }
+
+            return bounds;
+        }
+
+        public static Vector3 RandPointInBounds(Bounds bounds)
+        {
+            var vec = new Vector3()
+            {
+                x = UnityEngine.Random.Range(bounds.min.x, bounds.max.x),
+                y = UnityEngine.Random.Range(bounds.min.y, bounds.max.y),
+                z = UnityEngine.Random.Range(bounds.min.z, bounds.max.z)
+            };
+
+            return vec;
+        }
     }
 }

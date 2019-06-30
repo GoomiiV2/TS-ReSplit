@@ -9,28 +9,31 @@ namespace TS2
 {
     public struct MeshInfo
     {
-        public static uint SIZE = 144;
+        public static uint SIZE       = 144;
+        public static byte EMPTY_LINK = 0xFF;
 
-        public byte Unk1;
+        public byte IsBone;
         public byte Unk2;
-        public byte Unk3;
-        public byte ID;
+        public byte ParentIdx;
+        public byte ChildIdx;
         public byte Unk4;
         public byte Unk5;
         public MeshInfoOffsets MeshOffsets;
         public MeshInfoOffsets MeshOffsets2;
         public MeshInfoOffsets TransparentMeshOffsets;
 
+        public bool HasChild { get { return ChildIdx != EMPTY_LINK; } }
+
         public static MeshInfo Read(BinaryReader R)
         {
             var meshInfo = new MeshInfo();
 
-            meshInfo.Unk1 = R.ReadByte();
-            meshInfo.Unk2 = R.ReadByte();
-            meshInfo.Unk3 = R.ReadByte();
-            meshInfo.ID   = R.ReadByte();
-            meshInfo.Unk4 = R.ReadByte();
-            meshInfo.Unk5 = R.ReadByte();
+            meshInfo.IsBone     = R.ReadByte();
+            meshInfo.Unk2       = R.ReadByte();
+            meshInfo.ParentIdx  = R.ReadByte();
+            meshInfo.ChildIdx   = R.ReadByte();
+            meshInfo.Unk4       = R.ReadByte();
+            meshInfo.Unk5       = R.ReadByte();
 
             R.BaseStream.Seek(14, SeekOrigin.Current);
             var MatIdOffset      = R.ReadUInt32();

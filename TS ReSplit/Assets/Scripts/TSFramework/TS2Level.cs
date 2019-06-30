@@ -18,6 +18,9 @@ public class TS2Level : MonoBehaviour
     public Refrances DataAssests;
     public bool ShowVisLeafs        = false;
     public bool CreateCollision     = false;
+    public bool ImportMainGeo       = true;
+    public bool ImportDecalGeo      = true;
+    public bool ImportOverlayGeo    = true;
     public LevelBakedData BakedData = new LevelBakedData();
 
     private string LevelDataPath { get { return $"{LevelPak}/bg/level{LevelID}/level{LevelID}.raw"; } }
@@ -175,7 +178,15 @@ public class TS2Level : MonoBehaviour
     {
         UnityEngine.Debug.Log($"Creating section: {Section.ID}");
 
-        var mesh                         = TSMeshUtils.SubMeshToMesh(Section.Mesh);
+        var meshGenOpts = new MeshCreationData()
+        {
+            CreateMainMesh        = ImportMainGeo,
+            CreateOverlaysMesh    = ImportOverlayGeo,
+            CreateTransparentMesh = ImportDecalGeo,
+            IsMapMesh             = true
+        };
+
+        var mesh                         = TSMeshUtils.SubMeshToMesh(Section.Mesh, meshGenOpts);
         var sectionGObj                  = new GameObject($"Map Section {Idx}");
         sectionGObj.transform.localScale = new Vector3(1, 1, 1);
 
@@ -227,7 +238,7 @@ public class TS2Level : MonoBehaviour
         sectionGObj.tag       = "LevelSection";
 
         // Apply per section overrides
-        if (BakedData != null && BakedData.PerSectionData != null)
+        if (BakedData != null && BakedData.PerSectionData != null && BakedData.PerSectionData.Count > Idx)
         {
             var sectionData = BakedData.PerSectionData[Idx];
             sectionData.Apply(sectionGObj);
