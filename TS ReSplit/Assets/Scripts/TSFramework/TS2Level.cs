@@ -360,7 +360,7 @@ public class TS2Level : MonoBehaviour
         LastPrefTime = timeTaken;
     }
 
-    private void ClearGenratedContent()
+    public void ClearGenratedContent()
     {
         const string GEN_BASE_OBJ_NAME = "Level Base";
 

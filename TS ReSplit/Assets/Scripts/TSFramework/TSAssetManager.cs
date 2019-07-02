@@ -8,6 +8,7 @@ public class TSAssetManager
 {
     public static string RunTimeDataPath = $"{Application.dataPath}../../../Data"; // Where the orignal game content is located
     private static Dictionary<string, TSPak> PakFiles = new Dictionary<string, TSPak>();
+    private static MediaSource MediaTypeSource = MediaSource.Files;
 
     public static byte[] LoadFile(string FilePath)
     {
@@ -96,6 +97,19 @@ public class TSAssetManager
                 string fileInPakPath = Filepath.Replace(pakPath, "").TrimStart(new char[] { '/', '\\' });
                 return Tuple.Create(pakPath, fileInPakPath);
             }
+        }
+
+        return null;
+    }
+
+    // Abstarct this so the media doesn't matter
+    public static string[] GetFilesInDir(string Dir, string Pattern)
+    {
+        if (MediaTypeSource == MediaSource.Files)
+        {
+            var path  = Path.Combine(RunTimeDataPath, Dir);
+            var files = Directory.GetFiles(path, Pattern, SearchOption.AllDirectories);
+            return files;
         }
 
         return null;

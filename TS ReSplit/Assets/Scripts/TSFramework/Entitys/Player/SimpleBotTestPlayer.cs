@@ -15,11 +15,13 @@ public class SimpleBotTestPlayer : MonoBehaviour
     private bool HasReachedGoal = false;
 
     public float GoalReachedThreshold = 0.2f;
+    public MeshFilter BoundsMesh;
 
     public void Start()
     {
-        NavAgent        = GetComponent<NavMeshAgent>();
-        NavMeshBounds   = Utils.CalcNavMeshBounds();
+        NavAgent          = GetComponent<NavMeshAgent>();
+        //NavMeshBounds   = Utils.CalcNavMeshBounds();
+        NavMeshBounds     = BoundsMesh.mesh.bounds;
         PickRandWalkGoal();
     }
 
@@ -37,6 +39,14 @@ public class SimpleBotTestPlayer : MonoBehaviour
     public void PickRandWalkGoal()
     {
         var randPoint = PickRandomPointInMap();
+
+        if (Vector3.Distance(randPoint, NavAgent.destination) <= 10)
+        {
+            var dir = randPoint - NavMeshBounds.center;
+            dir.Normalize();
+            randPoint = randPoint - (dir * 20);
+        }
+
         NavAgent.SetDestination(randPoint);
         HasReachedGoal     = false;
         NavAgent.isStopped = false;

@@ -5113,6 +5113,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   GoalReachedThreshold: 1
+  BoundsMesh: {fileID: 1949603692}
 --- !u!195 &2065940244
 NavMeshAgent:
   m_ObjectHideFlags: 0
