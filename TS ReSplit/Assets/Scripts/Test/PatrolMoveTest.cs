@@ -47,7 +47,7 @@ public class PatrolMoveTest : MonoBehaviour {
         if (IsTurning)
         {
             IsTurning = true;
-            transform.rotation = Quaternion.Lerp(transform.rotation, RotationGoal, 2.5f * Time.deltaTime);
+            //transform.rotation = Quaternion.Lerp(transform.rotation, RotationGoal, 2.5f * Time.deltaTime);
 
             if (Quaternion.Angle(transform.rotation, RotationGoal) <= 1.0f)
             {

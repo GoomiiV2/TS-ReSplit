@@ -15,6 +15,7 @@ namespace TS2Data
         public const string MoveFwd         = "MoveFwd";
         public const string RunFwd          = "RunFwd";
         public const string IdleScratchHead = "IdleScratchHead";
+        public const string IdleStand       = "IdleStand";
     };
 
     public class AnimationDB
@@ -30,6 +31,7 @@ namespace TS2Data
             { PlayerAnims.MoveFwd,          AnimationRecord.Create("moveforward_m0.raw") },
             { PlayerAnims.RunFwd,           AnimationRecord.Create("run_m0.raw") },
             { PlayerAnims.IdleScratchHead,  AnimationRecord.Create("scratchhead.raw", true) },
+            { PlayerAnims.IdleStand,        AnimationRecord.Create("standpose_m0.raw", true) },
         };
 
         public AnimationRecord this[string AnimID]

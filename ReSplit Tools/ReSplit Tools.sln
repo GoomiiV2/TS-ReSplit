@@ -1,11 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2048
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Splitter", "ReSplit Tools\Splitter.csproj", "{9801BD48-EB34-41FF-B885-637C98CF421B}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ts2MeshGrapher", "Ts2MeshGrapher\Ts2MeshGrapher.csproj", "{A32F8778-4144-42B9-8075-1FE3A77785B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SplitterV2", "SplitterV2\SplitterV2.csproj", "{7E998FA1-7331-4764-A2A7-0BB604FEE865}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spindle", "Spindle\Spindle.csproj", "{8D49A99C-ED55-471C-9993-E81553C485EB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{A32F8778-4144-42B9-8075-1FE3A77785B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A32F8778-4144-42B9-8075-1FE3A77785B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A32F8778-4144-42B9-8075-1FE3A77785B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E998FA1-7331-4764-A2A7-0BB604FEE865}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E998FA1-7331-4764-A2A7-0BB604FEE865}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E998FA1-7331-4764-A2A7-0BB604FEE865}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E998FA1-7331-4764-A2A7-0BB604FEE865}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D49A99C-ED55-471C-9993-E81553C485EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D49A99C-ED55-471C-9993-E81553C485EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D49A99C-ED55-471C-9993-E81553C485EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D49A99C-ED55-471C-9993-E81553C485EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

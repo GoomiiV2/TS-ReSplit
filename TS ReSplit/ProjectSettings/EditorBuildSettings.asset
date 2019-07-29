@@ -8,7 +8,13 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/TS2/MP/Ice Station.unity
     guid: 99e153564256f314682cb2c7dc8e9eeb
+  - enabled: 1
+    path: Assets/Scenes/TS2/Exploring/AnimationExplorer.unity
+    guid: 5949bc0cc00a96a4b983c44810aba44d
+  - enabled: 1
+    path: Assets/Scenes/TS2/Exploring/LevelExplorer.unity
+    guid: af17d2e945550724595e6f0f908fb2c0
   m_configObjects: {}

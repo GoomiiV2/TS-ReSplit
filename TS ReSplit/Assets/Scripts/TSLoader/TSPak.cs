@@ -12,6 +12,16 @@ public class TSPak
     private Dictionary<string, TSPakEntry> FileEntries = new Dictionary<string, TSPakEntry>();
     private string PakFilePath;
 
+    public TSPak()
+    {
+
+    }
+
+    public TSPak(string FilePath)
+    {
+        LoadEntries(FilePath);
+    }
+
     public void LoadEntries(string FilePath)
     {
         PakFilePath = FilePath;
