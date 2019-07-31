@@ -148,7 +148,9 @@ public class Ts2AnimationDebug : MonoBehaviour
                 if (ShowBoneNames)
                 {
                     var name = TS2AnimationData.HumanSkel.Names[connBoneId];
-                    Handles.Label(combinedMatrix.GetColumn(3), $"({connBoneId}) {name}");
+                    #if UNITY_EDITOR
+                        Handles.Label(combinedMatrix.GetColumn(3), $"({connBoneId}) {name}");
+                    #endif
                 }
 
                 Gizmos.color = new Color32(255, 76, 212, 255);
@@ -168,7 +170,9 @@ public class Ts2AnimationDebug : MonoBehaviour
             var pos           = transform.position + new Vector3(bonePos.x, bonePos.y, bonePos.z);
             Gizmos.DrawWireSphere(pos, 0.02f);
             var name = i == 0 ? "  (0) Root" : $"  ({i - 1}) {TS2AnimationData.HumanSkel.Names[i - 1]}";
-            Handles.Label(pos, name);
+            #if UNITY_EDITOR
+                Handles.Label(pos, name);
+            #endif
         }
     }
 

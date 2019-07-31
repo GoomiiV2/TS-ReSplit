@@ -6,7 +6,12 @@ using UnityEngine;
 
 public class TSAssetManager
 {
-    public static string RunTimeDataPath = $"{Application.dataPath}../../../Data"; // Where the orignal game content is located
+    #if UNITY_EDITOR
+        public static string RunTimeDataPath = $"{Application.dataPath}../../../Data"; // Where the orignal game content is located
+#else
+        public static string RunTimeDataPath = $"{Application.dataPath}../Data"; // Where the orignal game content is located
+#endif
+
     private static Dictionary<string, TSPak> PakFiles = new Dictionary<string, TSPak>();
     private static MediaSource MediaTypeSource = MediaSource.Files;
 

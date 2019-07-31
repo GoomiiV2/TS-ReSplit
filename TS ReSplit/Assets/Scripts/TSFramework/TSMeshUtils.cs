@@ -161,7 +161,10 @@ public static class TSMeshUtils
             mesh.RecalculateNormals();
             if (Options.IsMapMesh && mesh.vertices != null && mesh.vertices.Count() > 0)
             {
-                Unwrapping.GenerateSecondaryUVSet(mesh);
+                #if UNITY_EDITOR
+                    // TODO: Find or well more likey make a runtime alterntive for this since its locked away as editor only :<
+                    Unwrapping.GenerateSecondaryUVSet(mesh);
+                #endif
             }
         }
 

@@ -284,17 +284,19 @@ public class TSAnimatedModel : MonoBehaviour {
 
                 //var boneLabel = $"Idx: {i}, {bone.Unk1} - {bone.Unk2} - {bone.Unk3} - {bone.Unk4} - {bone.Unk5} - {bone.Unk6}";
                 var boneLabel = $"Idx: {i}";
-                Handles.Label(bone.Pos + (Vector3.up * 0.00002f), boneLabel,
-                    new GUIStyle() {
-                        alignment = TextAnchor.MiddleCenter,
-                        normal = new GUIStyleState() {
-                            textColor = Color.white,
-                        },
-                        fontSize = 10
-                    });
+                #if UNITY_EDITOR
+                    Handles.Label(bone.Pos + (Vector3.up * 0.00002f), boneLabel,
+                        new GUIStyle() {
+                            alignment = TextAnchor.MiddleCenter,
+                            normal = new GUIStyleState() {
+                                textColor = Color.white,
+                            },
+                            fontSize = 10
+                        });
 
-                Gizmos.color = new Color32(224, 51, 94, 150);
-                Gizmos.DrawWireSphere(bone.Pos, 0.02f);
+                    Gizmos.color = new Color32(224, 51, 94, 150);
+                    Gizmos.DrawWireSphere(bone.Pos, 0.02f);
+                #endif
             }
         }
 
@@ -303,62 +305,68 @@ public class TSAnimatedModel : MonoBehaviour {
     [Conditional("UNITY_EDITOR")]
     private void DisplayVertWeights()
     {
-        for (int i = 0; i < TS2Model.Meshes.Length; i++)
-        {
-            var mesh = TS2Model.Meshes[i];
-            if (mesh.MainMesh != null)
+        #if UNITY_EDITOR
+            for (int i = 0; i < TS2Model.Meshes.Length; i++)
             {
-                for (int aye = 0; aye < mesh.MainMesh.Verts.Length; aye++)
+                var mesh = TS2Model.Meshes[i];
+                if (mesh.MainMesh != null)
                 {
-                    var vert = mesh.MainMesh.Verts[aye];
-                    var weight = mesh.MainMesh.Uvs[aye];
-
-                    var pos = transform.position + TSMeshUtils.Ts2VertToV3(vert);
-
-                    if (weight.W != 1.0f)
+                    for (int aye = 0; aye < mesh.MainMesh.Verts.Length; aye++)
                     {
-                        Handles.Label(pos, $"{weight.W}");
+                        var vert = mesh.MainMesh.Verts[aye];
+                        var weight = mesh.MainMesh.Uvs[aye];
+
+                        var pos = transform.position + TSMeshUtils.Ts2VertToV3(vert);
+
+                        if (weight.W != 1.0f)
+                        {
+                            Handles.Label(pos, $"{weight.W}");
+                        }
                     }
                 }
             }
-        }
+        #endif
     }
 
     [Conditional("UNITY_EDITOR")]
     public void DrawVertFlags()
     {
-        for (int i = 0; i < TS2Model.Meshes.Length; i++)
-        {
-            var mesh = TS2Model.Meshes[i];
-            if (mesh.MainMesh != null)
+        #if UNITY_EDITOR
+            for (int i = 0; i < TS2Model.Meshes.Length; i++)
             {
-                for (int aye = 0; aye < mesh.MainMesh.Verts.Length; aye++)
+                var mesh = TS2Model.Meshes[i];
+                if (mesh.MainMesh != null)
                 {
-                    var vert = mesh.MainMesh.Verts[aye];
-                    var weight = mesh.MainMesh.Uvs[aye];
+                    for (int aye = 0; aye < mesh.MainMesh.Verts.Length; aye++)
+                    {
+                        var vert = mesh.MainMesh.Verts[aye];
+                        var weight = mesh.MainMesh.Uvs[aye];
 
-                    var pos = transform.position + TSMeshUtils.Ts2VertToV3(vert);
+                        var pos = transform.position + TSMeshUtils.Ts2VertToV3(vert);
 
-                    Handles.Label(pos, $"{vert.Scale}");
+                        Handles.Label(pos, $"{vert.Scale}");
+                    }
                 }
             }
-        }
+        #endif
     }
 
     [Conditional("UNITY_EDITOR")]
     private void DrawDebugSkelation()
     {
-        if (Bones != null)
-        {
-            for (int i = 0; i < Bones.Length; i++)
+        #if UNITY_EDITOR
+            if (Bones != null)
             {
-                var bone     = Bones[i];
-                var pos      = transform.position + bone.Position;
-                Gizmos.color = Color.yellow;
-                //Gizmos.DrawSphere(pos, 0.02f);
-                Handles.Label(pos, $"{bone.ID} [{string.Join(", ", bone.MeshSections.ToArray())}]");
+                for (int i = 0; i < Bones.Length; i++)
+                {
+                    var bone     = Bones[i];
+                    var pos      = transform.position + bone.Position;
+                    Gizmos.color = Color.yellow;
+                    //Gizmos.DrawSphere(pos, 0.02f);
+                    Handles.Label(pos, $"{bone.ID} [{string.Join(", ", bone.MeshSections.ToArray())}]");
+                }
             }
-        }
+        #endif
     }
 }
 

@@ -62,11 +62,13 @@ public class SimpleBotTestPlayer : MonoBehaviour
     [ExecuteInEditMode]
     void OnDrawGizmos()
     {
-        if (NavAgent != null)
-        {
-            Gizmos.color = new Color32(224, 51, 94, 255);
-            Handles.Label(NavAgent.destination, "Bot Goal");
-            Gizmos.DrawSphere(NavAgent.destination, 0.2f);
-        }
+        #if UNITY_EDITOR
+            if (NavAgent != null)
+            {
+                Gizmos.color = new Color32(224, 51, 94, 255);
+                Handles.Label(NavAgent.destination, "Bot Goal");
+                Gizmos.DrawSphere(NavAgent.destination, 0.2f);
+            }
+        #endif
     }
 }

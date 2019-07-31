@@ -261,7 +261,7 @@ public class AnimationExplorer : MonoBehaviour
     {
         if (Settings.CurrentModel != null)
         {
-            var mdl         = Settings.Model;
+            /*var mdl         = Settings.Model;
             var modelScript = PreviewModel.GetComponent<MeshFilter>();
             var triCount    = 0;
             for (int i = 0; i < modelScript.mesh.subMeshCount; i++) { triCount += modelScript.mesh.GetIndices(i).Length; }
@@ -271,7 +271,7 @@ public class AnimationExplorer : MonoBehaviour
             GUILayout.Label($"({Path.GetFileName(Settings.CurrentModel)}): Num Mats: {mdl.Materials.Length}, Num Meshes: {mdl.Meshes.Length}, Num Meshes Infos: {mdl.MeshInfos.Length}");
             GUILayout.Label($"Num Verts: {modelScript.mesh.vertices.Length}, Num Tris: {triCount}");
             GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
+            GUILayout.EndHorizontal();*/
         }
     }
 

@@ -47,7 +47,7 @@ public class AnimatedModelV2 : MonoBehaviour {
 
         var modelPakPath = TSAssetManager.GetPakForPath(ModelPath).Item1;
         var texPaths     = TSTextureUtils.GetTexturePathsForMats(tS2Model.Materials);
-        var data = TSMeshUtils.SubMeshToMesh(tS2Model.Meshes, new MeshCreationData()
+        var data         = TSMeshUtils.SubMeshToMesh(tS2Model.Meshes, new MeshCreationData()
         {
             CreateMainMesh        = true,
             CreateOverlaysMesh    = true,

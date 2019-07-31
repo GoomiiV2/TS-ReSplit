@@ -36,8 +36,8 @@ public class DebugPlane : MonoBehaviour
         // Material
         meshFilter.mesh         = mesh;
         meshRender.materials    = new Material[1];
-        var mat                 = (Material)AssetDatabase.LoadAssetAtPath("Assets/Mats/DebugPlane.mat", typeof(Material)); ;
-        meshRender.material     = mat;
+        /*var mat                 = (Material)AssetDatabase.LoadAssetAtPath("Assets/Mats/DebugPlane.mat", typeof(Material)); ;
+        meshRender.material     = mat;*/
 
         // Label
         var labelObj                = new GameObject("Text");

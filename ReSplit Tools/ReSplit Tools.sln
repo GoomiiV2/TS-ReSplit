@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SplitterV2", "SplitterV2\Sp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spindle", "Spindle\Spindle.csproj", "{8D49A99C-ED55-471C-9993-E81553C485EB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TS2Img", "TS2Img\TS2Img.csproj", "{B74CA577-4247-40EC-AA28-CB581546008A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{8D49A99C-ED55-471C-9993-E81553C485EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D49A99C-ED55-471C-9993-E81553C485EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D49A99C-ED55-471C-9993-E81553C485EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B74CA577-4247-40EC-AA28-CB581546008A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B74CA577-4247-40EC-AA28-CB581546008A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B74CA577-4247-40EC-AA28-CB581546008A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B74CA577-4247-40EC-AA28-CB581546008A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
