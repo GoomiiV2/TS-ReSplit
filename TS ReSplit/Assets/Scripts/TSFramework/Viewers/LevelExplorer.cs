@@ -47,7 +47,7 @@ public class LevelExplorer : MonoBehaviour
     {
         Settings.IsLoading = true;
 
-        var pakPath = LevelPath.Replace(TSAssetManager.RunTimeDataPath, "").TrimStart('\\').Replace("\\", "/");
+        var pakPath = LevelPath.Replace(TSAssetManager.GetCurrentDataPath(), "").TrimStart('\\').Replace("\\", "/");
         var levelId = LevelPath.Split('_')[1].Replace(".pak", "");
         Level.ClearGenratedContent();
         Level.LevelPak = pakPath;

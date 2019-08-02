@@ -26,7 +26,7 @@ public class TSPak
     {
         PakFilePath = FilePath;
 
-        using (var file = File.Open(FilePath, FileMode.Open))
+        using (var file = File.OpenRead(FilePath))
         {
             if (file != null)
             {
@@ -59,7 +59,7 @@ public class TSPak
         TSPakEntry fileEntry;
         if (FileEntries.TryGetValue(FilePath, out fileEntry))
         {
-            using (var file = File.Open(PakFilePath, FileMode.Open))
+            using (var file = File.OpenRead(PakFilePath))
             {
                 file.Seek((int)fileEntry.Offset, SeekOrigin.Begin);
                 var data = new byte[fileEntry.Size];

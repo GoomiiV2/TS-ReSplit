@@ -2,18 +2,53 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public class TSAssetManager
 {
-    #if UNITY_EDITOR
-        public static string RunTimeDataPath = $"{Application.dataPath}../../../Data"; // Where the orignal game content is located
+    public static readonly List<(TSGame Game, string[] PS2DiscIDs)> PS2GameIDsMapping = new List<(TSGame Game, string[] PS2DiscIDs)>()
+    {
+        (TSGame.TimeSplitters2, new string[] { "SLES_50877" })
+    };
+
+    public static readonly Dictionary<string, TSGame> GameIDMapping = new Dictionary<string, TSGame>()
+    {
+        { "TS1", TSGame.TimeSplitters1 },
+        { "TS2", TSGame.TimeSplitters2 },
+        { "TS3", TSGame.TimeSplitters3 }
+    };
+
+#if UNITY_EDITOR
+    public static string RunTimeDataPath = $"{Application.dataPath}../../../Data"; // Where the orignal game content is located
 #else
         public static string RunTimeDataPath = $"{Application.dataPath}../Data"; // Where the orignal game content is located
 #endif
 
+    // TODO: Add some flush levels so that when level paks can get unloaded from memory when a new level is loaded and such
     private static Dictionary<string, TSPak> PakFiles = new Dictionary<string, TSPak>();
-    private static MediaSource MediaTypeSource = MediaSource.Files;
+    private static MediaSource MediaTypeSource        = MediaSource.Files;
+    private static TSGame GameType                    = TSGame.TimeSplitters2;
+    private static string DVDDrivePath                = "";
+
+    // Decide what media to load the game content from
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    public static void Init()
+    {
+        // Check for a dvd disc
+        var disc = FindDriveWithGameDisc();
+        if (disc != null)
+        {
+            MediaTypeSource = MediaSource.Disc;
+            DVDDrivePath    = disc.Value.Drive;
+        }
+        else
+        {
+            MediaTypeSource = MediaSource.Files;
+        }
+
+        Debug.Log($"TSAssetManager::Init MediaTypeSource: {MediaTypeSource}");
+    }
 
     public static byte[] LoadFile(string FilePath)
     {
@@ -69,6 +104,22 @@ public class TSAssetManager
         return pakEntries;
     }
 
+    public static string GetCurrentDataPath()
+    {
+        if (MediaTypeSource == MediaSource.Disc)
+        {
+            return DVDDrivePath;
+        }
+        else if (MediaTypeSource == MediaSource.Files)
+        {
+            return RunTimeDataPath;
+        }
+        else
+        {
+            return RunTimeDataPath;
+        }
+    }
+
     #region Internals
     private static byte[] LoadFileFromDisk(string Filepath)
     {
@@ -84,8 +135,22 @@ public class TSAssetManager
 
     private static string GetPakPath(string PakPath)
     {
-        var pathToPak = Path.Combine(RunTimeDataPath, PakPath);
-        return pathToPak;
+        var gameIDStr   = PakPath.Substring(0, 3).ToUpper();
+        var hasGameType = GameIDMapping.TryGetValue(gameIDStr, out TSGame GameID);
+
+        if (MediaTypeSource == MediaSource.Disc)
+        {
+            // Remove the "ts2/" prefix for now if loading from a dvd, only game supported
+            var pak = hasGameType ? PakPath.Substring(4, PakPath.Length - 4) : PakPath;
+
+            var pathToPak = Path.Combine(DVDDrivePath, pak);
+            return pathToPak;
+        }
+        else
+        {
+            var pathToPak = Path.Combine(RunTimeDataPath, PakPath);
+            return pathToPak;
+        }
     }
 
     // If the given path is for a file in a pak, returns a ref to the pak that contains that file
@@ -112,9 +177,60 @@ public class TSAssetManager
     {
         if (MediaTypeSource == MediaSource.Files)
         {
-            var path  = Path.Combine(RunTimeDataPath, Dir);
-            var files = Directory.GetFiles(path, Pattern, SearchOption.AllDirectories);
+            var basePath = GetCurrentDataPath();
+            var path     = Path.Combine(basePath, Dir);
+            var files    = Directory.GetFiles(path, Pattern, SearchOption.AllDirectories);
             return files;
+        }
+        else if (MediaTypeSource == MediaSource.Disc)
+        {
+            var basePath = GetCurrentDataPath();
+            var pak      = Dir.Substring(4, Dir.Length - 4);
+            var path     = Path.Combine(basePath, pak);
+            var files    = Directory.GetFiles(path, Pattern, SearchOption.AllDirectories);
+            return files;
+        }
+
+        return null;
+    }
+
+    // Scan the attached DVD drives for one with a TimeSplitters disc in it
+    public static (string Drive, TSGame Game)? FindDriveWithGameDisc()
+    {
+        foreach (var drive in DriveInfo.GetDrives())
+        {
+            if (drive.DriveType == DriveType.CDRom && drive.IsReady)
+            {
+                var ps2GameID = GetPS2GameIDFromDisc(drive.RootDirectory.ToString());
+                var gameType  = PS2GameIDsMapping.Where(x => x.PS2DiscIDs.Any(y => y.Equals(ps2GameID, StringComparison.CurrentCultureIgnoreCase))).FirstOrDefault();
+                if (gameType != default)
+                {
+                    return (drive.RootDirectory.ToString(), gameType.Game);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    // Why not just use the volumelabel? because .Net doesn't give me that :<
+    // So parse the SYSTEM.CNF file on the disc and get the id from that
+    private static string GetPS2GameIDFromDisc(string DrivePath)
+    {
+        var filePath = Path.Combine(DrivePath, "SYSTEM.CNF");
+        if (File.Exists(filePath))
+        {
+            var lines = File.ReadAllLines(filePath);
+            foreach (var line in lines)
+            {
+                var kvp = line.Split(new char[] { '=' });
+                if (kvp[0].Trim().Equals("BOOT2", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    var id = kvp[1].Trim().ToLower().Replace(@"cdrom0:\", "");
+                    id     = id.Substring(0, id.Length - 2).Replace(".", "");
+                    return id;
+                }
+            }
         }
 
         return null;
