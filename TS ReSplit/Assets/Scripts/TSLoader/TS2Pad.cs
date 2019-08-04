@@ -102,7 +102,7 @@ namespace TS2
                 var thing      = new Node();
                 thing.ID       = R.ReadUInt32();
                 thing.UNK      = R.ReadUInt32();
-                thing.UNK2 = R.ReadUInt32();
+                thing.UNK2     = R.ReadUInt32();
 
                 // Position, array of 3 floats
                 thing.Position = new float[3];

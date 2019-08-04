@@ -59,7 +59,7 @@ public class AnimatedModelV2 : MonoBehaviour {
 
         MeshRenderer.materials = new Material[data.TexData.Length];
 
-        for (int i = 0; i < MeshRenderer.materials.Length; i++)
+        for (int i = 0; i < tS2Model.Materials.Length; i++)
         {
             var matInfo = data.TexData[i];
             var matData = tS2Model.Materials[i];
@@ -135,15 +135,15 @@ public class AnimatedModelV2 : MonoBehaviour {
         MeshFilter   = GetComponent<MeshFilter>();
         MeshRenderer = GetComponent<SkinnedMeshRenderer>();
 
-        if (MeshFilter == null)
-        {
-            MeshFilter = this.gameObject.AddComponent<MeshFilter>();
-        }
+        /*if (MeshFilter != null) { DestroyImmediate(MeshFilter); }
+        MeshFilter = this.gameObject.AddComponent<MeshFilter>();
 
-        if (MeshRenderer == null)
-        {
-            MeshRenderer = this.gameObject.AddComponent<SkinnedMeshRenderer>();
-        }
+        if (MeshRenderer != null) { DestroyImmediate(MeshRenderer); }
+        MeshRenderer = this.gameObject.AddComponent<SkinnedMeshRenderer>();*/
+
+        if (MeshFilter == null) { MeshFilter = this.gameObject.AddComponent<MeshFilter>(); }
+
+        if (MeshRenderer == null) { MeshRenderer = this.gameObject.AddComponent<SkinnedMeshRenderer>(); }
 
         MeshFilter.hideFlags   = HideFlags.DontSave;
         MeshRenderer.hideFlags = HideFlags.DontSave;

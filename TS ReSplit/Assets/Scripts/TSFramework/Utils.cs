@@ -112,5 +112,24 @@ namespace Assets.Scripts.TSFramework
 
             return vec;
         }
+
+        // A simple display of the ReSplit name in the bottom right
+        public static void ProjectLogo()
+        {
+            var width  = 60;
+            var height = 40;
+            var x      = Screen.width - width;
+            var y      = Screen.height - height;
+            var rect   = new Rect(Screen.width - width, Screen.height - height, width, height);
+
+            var defaultFontSize     = GUI.skin.label.fontSize;
+            GUI.skin.label.fontSize = 22;
+            GUI.contentColor        = new Color32(0xDE, 0x31, 0x63, 0xFF);
+            GUI.Label(new Rect(x - 30, y, width, height), "Re");
+            GUI.contentColor = Color.white;
+            GUI.Label(new Rect(x, y, width, height), "Split");
+
+            GUI.skin.label.fontSize = defaultFontSize;
+        }
     }
 }

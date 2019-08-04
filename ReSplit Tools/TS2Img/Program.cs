@@ -14,12 +14,22 @@ namespace TS2Img
         // TODO: Either fix up or just focus on the rust version
         static void Main(string[] args)
         {
-            ConvertToTS2Img(args[0], args[1]);
+            //ConvertToTS2Img(args[0], args[1]);
+
+            CreateDebugTextureFromTS2(args[0], args[1]);
         }
 
         static bool IsTS2Img()
         {
             return true;
+        }
+
+        static void CreateDebugTextureFromTS2(string Input, string Output)
+        {
+            var texData = File.ReadAllBytes(Input);
+            var tex     = new TS2.Texture(texData);
+
+            Util.CreateDebugTexture(tex, Output);
         }
 
         // This is crude

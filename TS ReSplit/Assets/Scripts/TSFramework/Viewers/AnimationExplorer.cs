@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Assets.Scripts.TSFramework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using TS2Data;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class AnimationExplorer : MonoBehaviour
 {
@@ -197,6 +199,17 @@ public class AnimationExplorer : MonoBehaviour
     {
         DrawUITopBar();
         DrawSidePanel();
+
+        // Other viewers
+        var viewersSelect = new Rect(Screen.width - 155, 5, 150, 200);
+        GUILayout.BeginArea(viewersSelect);
+        if (GUILayout.Button($"Level Viewer"))
+        {
+            SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/LevelExplorer.unity", LoadSceneMode.Single);
+        }
+        GUILayout.EndArea();
+
+        Utils.ProjectLogo();
     }
 
     void DrawUITopBar()
@@ -226,10 +239,10 @@ public class AnimationExplorer : MonoBehaviour
             bool useRootMotion = Settings.AnimUseRootMotion;
             bool loop          = Settings.AnimLoop;
 
-            GUILayout.BeginHorizontal(new GUILayoutOption[] { });
+            GUILayout.BeginHorizontal(new GUILayoutOption[] { GUILayout.ExpandWidth(false) });
                 GUILayout.BeginVertical();
-                    Settings.AnimUseRootMotion = GUILayout.Toggle(Settings.AnimUseRootMotion, "Root Motion");
-                    Settings.AnimLoop          = GUILayout.Toggle(Settings.AnimLoop, "Loop");
+                    Settings.AnimUseRootMotion = GUILayout.Toggle(Settings.AnimUseRootMotion, "Root Motion", new GUILayoutOption[] { GUILayout.ExpandWidth(false) });
+                    Settings.AnimLoop          = GUILayout.Toggle(Settings.AnimLoop, "Loop", new GUILayoutOption[] { GUILayout.ExpandWidth(false) });
                 GUILayout.EndVertical();
             GUILayout.EndHorizontal();
 
@@ -247,7 +260,7 @@ public class AnimationExplorer : MonoBehaviour
         {
             var an = Settings.Animation;
 
-            GUILayout.BeginHorizontal(new GUILayoutOption[] { });
+            GUILayout.BeginHorizontal(new GUILayoutOption[] { GUILayout.ExpandWidth(false) });
                 GUILayout.BeginVertical();
                     //GUILayout.Label($"Animation Info ({Path.GetFileName(Settings.CurrentAnimation)}):");
                     GUILayout.Label($"{Path.GetFileName(Settings.CurrentAnimation)}: Magic: {new string(an.Head.Magic)} Ver: {an.Head.Version} Unk1: {an.Head.Unk1} Unk2: {an.Head.Unk2}");

@@ -35,10 +35,25 @@ namespace TS2
                 LoadMeshes(r, infoOffset);
 
                 // if there is more data, should be textures included in the model
-                uint includedTexOffset = infoOffset + MODEL_INFO_SIZE;
+                /*uint includedTexOffset = infoOffset + MODEL_INFO_SIZE;
                 if (r.BaseStream.Length > includedTexOffset)
                 {
                     LoadTextures(r, includedTexOffset);
+                }*/
+
+                if (CheckIfHasIncludedTextures())
+                {
+                    Textures = new Texture[Materials.Length];
+                    for (int i = 0; i < Materials.Length; i++)
+                    {
+                        var mat = Materials[i];
+                        if (mat.Flags == MatInfo.Flag.TexturesIncInModel) // if we got this far all of them for this model should be included
+                        {
+                            r.BaseStream.Seek(mat.ID, SeekOrigin.Begin);
+                            var tex = Texture.Read(r);
+                            Textures[i] = tex;
+                        }
+                    }
                 }
             }
 
@@ -83,6 +98,20 @@ namespace TS2
 
             Meshes    = meshes.ToArray();
             MeshInfos = meshInfos.ToArray();
+        }
+
+        private bool CheckIfHasIncludedTextures()
+        {
+            for (int i = 0; i < Materials.Length; i++)
+            {
+                var mat = Materials[i];
+                if (mat.Flags == MatInfo.Flag.TexturesIncInModel)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void LoadTextures(BinaryReader R, uint Offset)

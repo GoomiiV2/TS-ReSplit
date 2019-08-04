@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Assets.Scripts.TSFramework;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class LevelExplorer : MonoBehaviour
 {
@@ -48,7 +50,10 @@ public class LevelExplorer : MonoBehaviour
         Settings.IsLoading = true;
 
         var pakPath = LevelPath.Replace(TSAssetManager.GetCurrentDataPath(), "").TrimStart('\\').Replace("\\", "/");
-        var levelId = LevelPath.Split('_')[1].Replace(".pak", "");
+        var levelId = Path.GetFileNameWithoutExtension(LevelPath).Split('_')[1];
+
+        Debug.Log($"LevelPath: {LevelPath}, pakPath: {pakPath}, levelId: {levelId}");
+
         Level.ClearGenratedContent();
         Level.LevelPak = pakPath;
         Level.LevelID  = levelId;
@@ -79,6 +84,8 @@ public class LevelExplorer : MonoBehaviour
             var pos    = new Rect((Screen.width / 2 - width / 2), (Screen.height / 2 - height / 2), width, height);
             GUI.Box(pos, "Loading");
         }
+
+        Utils.ProjectLogo();
     }
 
     void DrawUI()
@@ -116,6 +123,15 @@ public class LevelExplorer : MonoBehaviour
         
         GUILayout.EndVertical();
         GUILayout.EndScrollView();
+        GUILayout.EndArea();
+
+        // Other viewers
+        var viewersSelect = new Rect(Screen.width - 155, 5, 150, 200);
+        GUILayout.BeginArea(viewersSelect);
+        if (GUILayout.Button($"Model Viewer"))
+        {
+            SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/AnimationExplorer.unity", LoadSceneMode.Single);
+        }
         GUILayout.EndArea();
     }
 }

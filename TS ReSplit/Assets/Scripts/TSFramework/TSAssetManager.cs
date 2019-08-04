@@ -19,11 +19,7 @@ public class TSAssetManager
         { "TS3", TSGame.TimeSplitters3 }
     };
 
-#if UNITY_EDITOR
-    public static string RunTimeDataPath = $"{Application.dataPath}../../../Data"; // Where the orignal game content is located
-#else
-        public static string RunTimeDataPath = $"{Application.dataPath}../Data"; // Where the orignal game content is located
-#endif
+    public static string RunTimeDataPath = ""; // Where the orignal game content is located
 
     // TODO: Add some flush levels so that when level paks can get unloaded from memory when a new level is loaded and such
     private static Dictionary<string, TSPak> PakFiles = new Dictionary<string, TSPak>();
@@ -45,6 +41,14 @@ public class TSAssetManager
         else
         {
             MediaTypeSource = MediaSource.Files;
+            if (Application.isEditor)
+            {
+                RunTimeDataPath = $"{Application.dataPath}../../../Data";
+            }
+            else
+            {
+                RunTimeDataPath = Path.Combine(Application.dataPath, "Data");
+            }
         }
 
         Debug.Log($"TSAssetManager::Init MediaTypeSource: {MediaTypeSource}");

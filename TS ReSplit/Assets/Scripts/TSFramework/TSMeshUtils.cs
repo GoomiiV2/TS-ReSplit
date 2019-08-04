@@ -168,7 +168,7 @@ public static class TSMeshUtils
             }
         }
 
-        mesh.UploadMeshData(true);
+        mesh.UploadMeshData(false);
 
         var meshData = new MeshData()
         {

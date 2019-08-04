@@ -72,7 +72,8 @@ namespace TS2
         [Flags]
         public enum Flag : uint
         {
-
+            None               = 0,
+            TexturesIncInModel = 268435456
         }
     }
 }

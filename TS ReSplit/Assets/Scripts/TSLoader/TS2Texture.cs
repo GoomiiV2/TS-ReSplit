@@ -56,6 +56,21 @@ namespace TS2
             Meta.HasAlpha = ScanForAlpha();
         }
 
+        public static float RazzaMap(float from, float fromMin, float fromMax, float toMin, float toMax)
+        {
+            var fromAbs = from - fromMin;
+            var fromMaxAbs = fromMax - fromMin;
+
+            var normal = fromAbs / fromMaxAbs;
+
+            var toMaxAbs = toMax - toMin;
+            var toAbs = toMaxAbs * normal;
+
+            var to = toAbs + toMin;
+
+            return to;
+        }
+
         private bool ScanForAlpha()
         {
             for (int i = 0; i < Palettle.Length; i++) {
