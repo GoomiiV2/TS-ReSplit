@@ -133,5 +133,33 @@ public class LevelExplorer : MonoBehaviour
             SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/AnimationExplorer.unity", LoadSceneMode.Single);
         }
         GUILayout.EndArea();
+
+        DrawLevelSettings();
+    }
+
+    void DrawLevelSettings()
+    {
+        if (Level != null)
+        {
+            var x = LeftUIWidth + 2;
+            var y = 40;
+
+            var showMainMesh      = Level.ImportMainGeo;
+            var showMeshOverlays  = Level.ImportOverlayGeo;
+            var showDecalOverlays = Level.ImportDecalGeo;
+
+            Level.ImportMainGeo    = GUI.Toggle(new Rect(x, y, 200, 15), Level.ImportMainGeo, "Show Main Mesh");
+            Level.ImportOverlayGeo = GUI.Toggle(new Rect(x, y + 15, 200, 15), Level.ImportOverlayGeo, "Show Overlays Mesh");
+            Level.ImportDecalGeo   = GUI.Toggle(new Rect(x, y + 30, 200, 15), Level.ImportDecalGeo, "Show Decal Mesh");
+
+            if (Level.ImportMainGeo != showMainMesh
+                    || Level.ImportOverlayGeo != showMeshOverlays
+                    || Level.ImportDecalGeo != showDecalOverlays)
+            {
+                Level.ClearGenratedContent();
+                Level.Start();
+            }
+
+        }
     }
 }

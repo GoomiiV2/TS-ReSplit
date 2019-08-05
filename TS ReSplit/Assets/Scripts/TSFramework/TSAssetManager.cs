@@ -9,7 +9,7 @@ public class TSAssetManager
 {
     public static readonly List<(TSGame Game, string[] PS2DiscIDs)> PS2GameIDsMapping = new List<(TSGame Game, string[] PS2DiscIDs)>()
     {
-        (TSGame.TimeSplitters2, new string[] { "SLES_50877" })
+        (TSGame.TimeSplitters2, new string[] { "SLES_50877", "SLUS_20314", "SLPS_25207", "SLKA_25020" })
     };
 
     public static readonly Dictionary<string, TSGame> GameIDMapping = new Dictionary<string, TSGame>()

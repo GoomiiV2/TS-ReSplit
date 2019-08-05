@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -10,6 +11,8 @@ namespace Assets.Scripts.TSFramework
 {
     public static class Utils
     {
+        public static string Version = "0.1 Alpha"; // Improve this, hopefully make it auto increment on build
+
         public static Vector3 V3FromFloats(float[] Floats)
         {
             var vector = new Vector3(Floats[0], Floats[1], Floats[2]);
@@ -116,7 +119,7 @@ namespace Assets.Scripts.TSFramework
         // A simple display of the ReSplit name in the bottom right
         public static void ProjectLogo()
         {
-            var width  = 60;
+            var width  = 80;
             var height = 40;
             var x      = Screen.width - width;
             var y      = Screen.height - height;
@@ -125,11 +128,23 @@ namespace Assets.Scripts.TSFramework
             var defaultFontSize     = GUI.skin.label.fontSize;
             GUI.skin.label.fontSize = 22;
             GUI.contentColor        = new Color32(0xDE, 0x31, 0x63, 0xFF);
-            GUI.Label(new Rect(x - 30, y, width, height), "Re");
+            GUI.Label(new Rect(x, y, width, height), "Re");
             GUI.contentColor = Color.white;
-            GUI.Label(new Rect(x, y, width, height), "Split");
+            GUI.Label(new Rect(x + 30, y, width, height), "Split");
+
+            GUI.skin.label.fontSize = 10;
+            GUI.Label(new Rect(x - 10, y, width, height), $"V {Version}", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.LowerRight });
 
             GUI.skin.label.fontSize = defaultFontSize;
+        }
+
+        public static void OpenLogFile()
+        {
+            var logFilePath = Application.consoleLogPath;
+            if (logFilePath != null || logFilePath != "")
+            {
+                System.Diagnostics.Process.Start($"notepad.exe {logFilePath}");
+            }
         }
     }
 }

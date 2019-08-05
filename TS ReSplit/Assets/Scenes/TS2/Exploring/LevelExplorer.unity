@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.37311953, g: 0.38074014, b: 0.3587274, a: 1}
+  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -210,7 +210,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 384724005}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -2.4193733, y: 12.368231, z: -27.661152}
+  m_LocalPosition: {x: -2.4193733, y: 12.368231, z: -26.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -274,6 +274,21 @@ PrefabInstance:
       propertyPath: m_Name
       value: LevelManager
       objectReference: {fileID: 0}
+    - target: {fileID: 3330115997250126105, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
+        type: 3}
+      propertyPath: LevelPak
+      value: ts2/pak/story/l_35_ST.pak
+      objectReference: {fileID: 0}
+    - target: {fileID: 3330115997250126105, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
+        type: 3}
+      propertyPath: LevelID
+      value: 35
+      objectReference: {fileID: 0}
+    - target: {fileID: 3330115997250126105, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
+        type: 3}
+      propertyPath: DataAssests.MissingTexture
+      value: 
+      objectReference: {fileID: 2800000, guid: af7e157f4d8690e42a258b81afdfa8f0, type: 3}
     - target: {fileID: 3330115997250126104, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -329,20 +344,5 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 3330115997250126105, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
-        type: 3}
-      propertyPath: LevelPak
-      value: ts2/pak/story/l_35_ST.pak
-      objectReference: {fileID: 0}
-    - target: {fileID: 3330115997250126105, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
-        type: 3}
-      propertyPath: LevelID
-      value: 35
-      objectReference: {fileID: 0}
-    - target: {fileID: 3330115997250126105, guid: 0c2ab0240bc9c7049bcfad7fc251deaa,
-        type: 3}
-      propertyPath: DataAssests.MissingTexture
-      value: 
-      objectReference: {fileID: 2800000, guid: af7e157f4d8690e42a258b81afdfa8f0, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0c2ab0240bc9c7049bcfad7fc251deaa, type: 3}
