@@ -16,6 +16,18 @@ namespace TS
             return floats;
         }
 
+        public static uint ReadUint32BE(this BinaryReader R)
+        {
+            var numInBytes = R.ReadBytes(4);
+            var num        = ToInt32BigEndian(numInBytes);
+            return num;
+        }
+
+        public static uint ToInt32BigEndian(byte[] buf)
+        {
+            return (uint)((buf[0] << 24) | (buf[1] << 16) | (buf[2] << 8) | buf[3]);
+        }
+
         // Taken from https://stackoverflow.com/a/34180417
         public static IEnumerable<T> DistinctBy<T, TKey>(this IEnumerable<T> items, Func<T, TKey> property)
         {
@@ -51,4 +63,4 @@ namespace TS
             return (prop == null) ? 0 : prop.GetHashCode();
         }
     }
-    }
+}

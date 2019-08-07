@@ -127,8 +127,23 @@ public class TSAssetManager
     #region Internals
     private static byte[] LoadFileFromDisk(string Filepath)
     {
-        var data = File.ReadAllBytes(Filepath);
-        return data;
+        var gameIDStr   = Filepath.Substring(0, 3).ToUpper();
+        var hasGameType = GameIDMapping.TryGetValue(gameIDStr, out TSGame GameID);
+
+        if (MediaTypeSource == MediaSource.Disc)
+        {
+            var pak = hasGameType ? Filepath.Substring(4, Filepath.Length - 4) : Filepath;
+
+            var path = Path.Combine(DVDDrivePath, pak);
+            var data      = File.ReadAllBytes(path);
+            return data;
+        }
+        else
+        {
+            var path      = Path.Combine(RunTimeDataPath, Filepath);
+            var data      = File.ReadAllBytes(path);
+            return data;
+        }
     }
 
     public static bool IsPakLoaded(string PakFilePath)

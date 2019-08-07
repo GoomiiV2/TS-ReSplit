@@ -12,7 +12,10 @@ public class EntryScrpit : MonoBehaviour
         var debugConsole = FindObjectOfType<IngameDebugConsole.DebugLogManager>();
         debugConsole.ShowPopup();
 
-        SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/LevelExplorer.unity", LoadSceneMode.Single);
+        if (!Application.isEditor)
+        {
+            SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/LevelExplorer.unity", LoadSceneMode.Single);
+        }
     }
 
     private void OnGUI()

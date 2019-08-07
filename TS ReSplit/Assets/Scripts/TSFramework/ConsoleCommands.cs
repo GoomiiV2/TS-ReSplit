@@ -28,4 +28,12 @@ public class ConsoleCommands : MonoBehaviour
     {
         SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/AnimationExplorer.unity", LoadSceneMode.Single);
     }
+
+    [ConsoleMethod("audio.test", "Test audio file decoding / playback")]
+    public static void audio_test()
+    {
+        var testFilePath = "ts2\\music\\level1\\2025.VAG";
+        var data         = TSAssetManager.LoadFile(testFilePath);
+        var audioFile    = new PS2.Vag(data);
+    }
 }

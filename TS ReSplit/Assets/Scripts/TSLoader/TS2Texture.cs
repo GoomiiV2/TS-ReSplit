@@ -47,8 +47,17 @@ namespace TS2
             Height = R.ReadInt32();
 
             Palettle  = new uint[256];
-            var bytes = R.ReadBytes(sizeof(uint) * Palettle.Length);
-            Buffer.BlockCopy(bytes, 0, Palettle, 0, bytes.Length);
+            for (int i = 0; i < Palettle.Length; i++)
+            {
+                var color = R.ReadUInt32();
+
+                // Ok so SWIZZLE
+                // This was annoying to figure out, unswizzled looked so close to correct D:
+                // To get the correct index for a color entry we need to swap bits 3 and 4
+                // This was a nice find to figure this out: http://www.mygamedemos.com/projects/PS2X/doxy/texture_8cpp-source.html Line 162
+                int swizIdx = SwizzleIdx(i);
+                Palettle[swizIdx] = color;
+            }
 
             var numPixels = (int)(Width * Height);
             Pixels        = R.ReadBytes(numPixels);
@@ -56,19 +65,10 @@ namespace TS2
             Meta.HasAlpha = ScanForAlpha();
         }
 
-        public static float RazzaMap(float from, float fromMin, float fromMax, float toMin, float toMax)
+        public static int SwizzleIdx(int Idx)
         {
-            var fromAbs = from - fromMin;
-            var fromMaxAbs = fromMax - fromMin;
-
-            var normal = fromAbs / fromMaxAbs;
-
-            var toMaxAbs = toMax - toMin;
-            var toAbs = toMaxAbs * normal;
-
-            var to = toAbs + toMin;
-
-            return to;
+            int swizIdx = (Idx & 231) + ((Idx & 8) << 1) + ((Idx & 16) >> 1);
+            return swizIdx;
         }
 
         private bool ScanForAlpha()
