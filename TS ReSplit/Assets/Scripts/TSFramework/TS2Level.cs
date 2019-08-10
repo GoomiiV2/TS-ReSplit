@@ -8,7 +8,7 @@ using TS2;
 using UnityEditor;
 using UnityEngine;
 
-using TextureStore = System.Collections.Generic.Dictionary<uint, (UnityEngine.Texture2D Tex, TS2.Texture.MetaInfo Meta)>;
+using TextureStore = System.Collections.Generic.Dictionary<uint, UnityEngine.Texture2D>;
 
 [ExecuteInEditMode]
 public class TS2Level : MonoBehaviour
@@ -152,15 +152,15 @@ public class TS2Level : MonoBehaviour
                 var ts2tex  = new TS2.Texture(texData);
                 var tex     = TSTextureUtils.TS2TexToT2D(ts2tex);
 
-                Textures.Add(texID.ID, (tex, ts2tex.Meta));
+                Textures.Add(texID.ID, tex);
             }
         }
     }
 
     // Gets a texture from the cache, or loads it if it was missing
-    private (Texture2D Tex, TS2.Texture.MetaInfo Meta) GetTexture(uint MatInfoId)
+    private Texture2D GetTexture(uint MatInfoId)
     {
-        var isLoaded = Textures.TryGetValue(MatInfoId, out (Texture2D Tex, TS2.Texture.MetaInfo Meta) Tex);
+        var isLoaded = Textures.TryGetValue(MatInfoId, out Texture2D Tex);
         if (isLoaded)
         {
             return Tex;
@@ -200,16 +200,16 @@ public class TS2Level : MonoBehaviour
 
         for (int i = 0; i < meshRender.materials.Length; i++)
         {
-            var levelMat                        = Map.Materials[mats[i].TexId];
-            var matId                           = levelMat.ID;
-            var hasTex                          = Textures.TryGetValue(matId, out var tex);
+            var levelMat = Map.Materials[mats[i].TexId];
+            var matId    = levelMat.ID;
+            var hasTex   = Textures.TryGetValue(matId, out var tex);
 
-            if (!hasTex) { tex = (DataAssests.MissingTexture, new TS2.Texture.MetaInfo() { HasAlpha = false }); } // Incase a texture is missing, for some reason
+            if (!hasTex) { tex = DataAssests.MissingTexture;  } // Incase a texture is missing, for some reason
 
             if (mats[i].IsTransparent)
             {
                 meshRender.materials[i]             = new Material(DataAssests.DefaultShader);
-                meshRender.materials[i].mainTexture = tex.Tex;
+                meshRender.materials[i].mainTexture = tex;
                 meshRender.materials[i].shader      = DataAssests.TransparentShader;
 
                 meshRender.materials[i].SetFloat("_ClampUVsX", levelMat.WrapModeX == MatInfo.WrapMode.NoRepeat ? 1 : 0);
@@ -217,10 +217,9 @@ public class TS2Level : MonoBehaviour
             }
             else
             {
-
                 meshRender.materials[i] = new Material(DataAssests.DefaultShader);
                 meshRender.materials[i].CopyPropertiesFromMaterial(DataAssests.DefaultMat);
-                meshRender.materials[i].mainTexture = tex.Tex;
+                meshRender.materials[i].mainTexture = tex;
             }
         }
 

@@ -4,14 +4,14 @@ using System.IO;
 namespace TS2
 {
     // Lovely and simple :D
+    // Untill I found out it was swizzled, still pretty simple, once you know >,>
     public class Texture
     {
         const byte OPAQUE_ALPHA_VALUE = 127;
         public uint ID;
-        private uint UNK;
+        public uint UNK;
         public int Width;
         public int Height;
-        public MetaInfo Meta;
 
         public uint[] Palettle;
         public byte[] Pixels;
@@ -51,41 +51,26 @@ namespace TS2
             {
                 var color = R.ReadUInt32();
 
+                // Scale the alpha, the file has max alpha as 127, so just double it
+                byte alpha = (byte)((color & 0xFF) * 2);
+                color      = color | (uint)alpha >> 24;
+
                 // Ok so SWIZZLE
                 // This was annoying to figure out, unswizzled looked so close to correct D:
                 // To get the correct index for a color entry we need to swap bits 3 and 4
                 // This was a nice find to figure this out: http://www.mygamedemos.com/projects/PS2X/doxy/texture_8cpp-source.html Line 162
-                int swizIdx = SwizzleIdx(i);
+                int swizIdx       = SwizzleIdx(i);
                 Palettle[swizIdx] = color;
             }
 
             var numPixels = (int)(Width * Height);
             Pixels        = R.ReadBytes(numPixels);
-
-            Meta.HasAlpha = ScanForAlpha();
         }
 
         public static int SwizzleIdx(int Idx)
         {
             int swizIdx = (Idx & 231) + ((Idx & 8) << 1) + ((Idx & 16) >> 1);
             return swizIdx;
-        }
-
-        private bool ScanForAlpha()
-        {
-            for (int i = 0; i < Palettle.Length; i++) {
-                var color = Palettle[i];
-                var isAlpha = (color & 0xFF000000) < OPAQUE_ALPHA_VALUE;
-
-                if (isAlpha) { return true; }
-            }
-
-            return false;
-        }
-
-        public struct MetaInfo
-        {
-            public bool HasAlpha;
         }
     }
 }
