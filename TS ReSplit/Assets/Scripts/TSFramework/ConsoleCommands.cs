@@ -35,5 +35,29 @@ public class ConsoleCommands : MonoBehaviour
         var testFilePath = "ts2\\music\\level1\\2025.VAG";
         var data         = TSAssetManager.LoadFile(testFilePath);
         var audioFile    = new PS2.Vag(data);
+
+        var soundSamples = audioFile.GetSamples();
+        var clip         = AudioClip.Create("test", soundSamples.Length, audioFile.Head.Channels == 0 ? 1 : audioFile.Head.Channels, (int)audioFile.Head.Frequency, false);
+        clip.SetData(soundSamples, 0);
+
+        AudioSource.PlayClipAtPoint(clip, new Vector3(0, 0, 0));
+    }
+
+    [ConsoleMethod("audio.testMusic", "Test audio musicfile decoding / playback")]
+    public static void audio_test_music()
+    {
+        var testFilePath = "ts2\\music\\music0\\1001.MIB";
+        var data         = TSAssetManager.LoadFile(testFilePath);
+        var numBlocks    = data.Length / PS2.Vag.AudioBlock.SIZE;
+        var blocks       = new List<PS2.Vag.AudioBlock>((int)numBlocks);
+
+        var audioFile         = new PS2.Vag();
+        audioFile.AudioBlocks = blocks.ToArray();
+
+        var soundSamples = audioFile.GetSamples();
+        var clip         = AudioClip.Create("test", soundSamples.Length, 1, 44100, false);
+        clip.SetData(soundSamples, 0);
+
+        AudioSource.PlayClipAtPoint(clip, new Vector3(0, 0, 0));
     }
 }
