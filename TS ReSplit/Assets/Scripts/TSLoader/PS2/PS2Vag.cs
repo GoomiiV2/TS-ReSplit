@@ -10,8 +10,6 @@ namespace PS2
 {
     public class Vag
     {
-        private const int SAMPLES_PER_BLOCK = 28; // 14 bytes with a nibble being a sample
-
         public Header Head;
         public AudioBlock[] AudioBlocks;
 
@@ -49,49 +47,19 @@ namespace PS2
 
         public float[] GetSamples()
         {
-            var numSamples     = AudioBlocks.Length * SAMPLES_PER_BLOCK;
-            var samples        = new float[numSamples];
-            var sampleIdx      = 0;
-            double prevSample1 = 0.0f;
-            double prevSample2 = 0.0f;
+            var numSamples  = AudioBlocks.Length * AudioBlock.SAMPLES_PER_BLOCK;
+            var samples     = new float[numSamples];
+            var sampleIdx   = 0;
+            var prevSamples = new short[] { 0, 0 };
 
             for (int i = 0; i < AudioBlocks.Length; i++)
             {
-                var block        = AudioBlocks[i];
-                var predictor    = block.DecodingCoeff >> 4;
-                var shift        = block.DecodingCoeff & 0xF;
-                var localSamples = new double[SAMPLES_PER_BLOCK];
-
-                int byteIdx = 0;
-                for (int aye = 0; aye < SAMPLES_PER_BLOCK; aye += 2)
-                {
-                    byte delta  = block.Data[byteIdx++];
-                    var sample = (short)((delta & 0xf) << 12);
-
-                    if ((sample & 0x8000) == 1) { sample |= unchecked((short)0xffff0000); }
-                    localSamples[aye] = (sample >> shift);
-
-                    sample = (short)((delta & 0xf0) << 8);
-
-                    if ((sample & 0x8000) == 1) { sample |= unchecked((short)0xffff0000); }
-                    localSamples[aye + 1] = (sample >> shift);
-
-                }
-
-                // TODO: see if I can do with out this second loop
-                for (int aye = 0; aye < SAMPLES_PER_BLOCK; aye++)
-                {
-                    localSamples[aye] = localSamples[aye] + prevSample1 * AudioBlock.PredictorLookup[predictor][0] + prevSample2 * AudioBlock.PredictorLookup[predictor][1];
-                    prevSample2       = prevSample1;
-                    prevSample1       = localSamples[aye];
-
-                    samples[sampleIdx++] = (float)(localSamples[aye]) / (float)32768;
-                }
+                var block  = AudioBlocks[i];
+                sampleIdx += block.Decode(ref samples, sampleIdx, ref prevSamples);
             }
 
             return samples;
         }
-
 
         public struct Header
         {
@@ -127,13 +95,12 @@ namespace PS2
 
         public struct AudioBlock
         {
-            public const uint SIZE = 16;
+            public const int SAMPLES_PER_BLOCK = 28; // 14 bytes with a nibble being a sample
+            public const uint SIZE             = 16;
 
             public byte DecodingCoeff;
             public LoopType Type;
             public byte[] Data;
-
-            public static float[] LastSamples = new float[] { 0.0f, 0.0f };
 
             public static AudioBlock Read(BinaryReader R)
             {
@@ -146,6 +113,55 @@ namespace PS2
                 return block;
             }
 
+            // Decode this block into an existing buffer at a given index
+            public int Decode(ref float[] Buffer, int BufferOffset, ref short[] PrevSamples)
+            {
+                var predictor = DecodingCoeff >> 4;
+                var shift     = DecodingCoeff >> 0 & 0xF;
+
+                int byteIdx = 0;
+                for (int aye = 0; aye < SAMPLES_PER_BLOCK; aye += 2)
+                {
+                    byte delta = Data[byteIdx++];
+                    var sample = (short)((delta & 0xf) << 12);
+
+                    if ((sample & 0x8000) == 1) { sample |= unchecked((short)0xffff0000); }
+                    Buffer[BufferOffset + aye] = DecodeSample((sample >> shift), predictor, ref PrevSamples);
+
+                    sample = (short)((delta & 0xf0) << 8);
+
+                    if ((sample & 0x8000) == 1) { sample |= unchecked((short)0xffff0000); }
+                    Buffer[BufferOffset + aye + 1] = DecodeSample((sample >> shift), predictor, ref PrevSamples);
+                }
+
+                return SAMPLES_PER_BLOCK;
+            }
+
+            private float DecodeSample(int Sample, int Predictor, ref short[] PrevSamples)
+            {
+                var samp = Sample + PredictorLookup[Predictor][0] * PrevSamples[0] + PredictorLookup[Predictor][1] * PrevSamples[1];
+                var sample     = ClampShort((int)samp) / 32768f;
+                PrevSamples[1] = PrevSamples[0];
+                PrevSamples[0] = ClampShort((int)samp);
+                return sample;
+            }
+
+            private short ClampShort(int Val)
+            {
+                if (Val > 32767)
+                {
+                    return 32767;
+                }
+                else if (Val < -32768)
+                {
+                    return -32768;
+                }
+                else
+                {
+                    return (short)Val;
+                }
+            }
+
             public enum LoopType : byte
             {
                 Default     = 0,
@@ -156,12 +172,12 @@ namespace PS2
             }
 
             #region Lookup Tables for ADPCM
-            public static readonly double[][] PredictorLookup = new double[][] {
-                new double[] {0.0f, 0.0f},
-                new double[] { 60.0f / 64.0f, 0.0f},
-                new double[] {115.0f / 64.0f, -52.0f / 64.0f},
-                new double[] {98.0f / 64.0f, -55.0f / 64.0f},
-                new double[] {122.0f / 64.0f, -60.0f / 64.0f}
+            public static readonly float[][] PredictorLookup = new float[][] {
+                new float[] { 0.0f, 0.0f },
+                new float[] { 60.0f / 64.0f, 0.0f },
+                new float[] { 115.0f / 64.0f, -52.0f / 64.0f },
+                new float[] { 98.0f / 64.0f, -55.0f / 64.0f },
+                new float[] { 122.0f / 64.0f, -60.0f / 64.0f }
             };
             #endregion
         }

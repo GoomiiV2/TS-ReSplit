@@ -162,7 +162,7 @@ public class PlayerAnimController : MonoBehaviour
         float headingAngle = Quaternion.LookRotation(forward).eulerAngles.y;
         float velAngle     = Quaternion.LookRotation(velDir).eulerAngles.y;
         var delta          = (headingAngle - velAngle);
-        Debug.Log($"Heading: {headingAngle}, {velAngle}, {delta}");
+        //Debug.Log($"Heading: {headingAngle}, {velAngle}, {delta}");
 
         if (delta > -45 && delta < 45)      { return MoveDir.Forward; }
         if (delta > 45 && delta < 135)      { return MoveDir.Right; }
@@ -200,11 +200,11 @@ public class PlayerAnimController : MonoBehaviour
             return state;
         }*/
 
-        var moveDir = GetMoveDir();
+        /*var moveDir = GetMoveDir();
         if (moveDir == MoveDir.Forward) { state = MoveState.Forward; }
         if (moveDir == MoveDir.Back)    { state = MoveState.Back; }
         if (moveDir == MoveDir.Left)    { state = MoveState.Left; }
-        if (moveDir == MoveDir.Right)   { state = MoveState.Right; }
+        if (moveDir == MoveDir.Right)   { state = MoveState.Right; }*/
 
         return state;
     }
@@ -220,9 +220,9 @@ public class PlayerAnimController : MonoBehaviour
             Color.black
         };
 
-        var moveDir = GetMoveDir();
+        /*var moveDir = GetMoveDir();
         var vel     = GetVelocity().normalized;
-        Debug.DrawRay(transform.position, vel * 2, colors[(int)moveDir]);
+        Debug.DrawRay(transform.position, vel * 2, colors[(int)moveDir]);*/
     }
 
     [Serializable]

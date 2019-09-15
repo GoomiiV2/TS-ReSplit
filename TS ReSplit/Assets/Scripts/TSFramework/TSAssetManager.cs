@@ -3,8 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
+[InitializeOnLoad]
 public class TSAssetManager
 {
     public static readonly List<(TSGame Game, string[] PS2DiscIDs)> PS2GameIDsMapping = new List<(TSGame Game, string[] PS2DiscIDs)>()
@@ -26,6 +28,11 @@ public class TSAssetManager
     private static MediaSource MediaTypeSource        = MediaSource.Files;
     private static TSGame GameType                    = TSGame.TimeSplitters2;
     private static string DVDDrivePath                = "";
+
+    static TSAssetManager()
+    {
+        Init();
+    }
 
     // Decide what media to load the game content from
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]

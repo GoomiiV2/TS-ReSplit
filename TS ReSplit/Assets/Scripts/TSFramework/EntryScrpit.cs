@@ -16,6 +16,8 @@ public class EntryScrpit : MonoBehaviour
         {
             SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/LevelExplorer.unity", LoadSceneMode.Single);
         }
+
+        ConsoleCommands.audio_test_music();
     }
 
     private void OnGUI()
