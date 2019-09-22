@@ -11,10 +11,13 @@ public class TS2AnimationManager : MonoBehaviour
     //public AnimatorController AnimatorController;
     private Animation Animation;
     private bool HasCurrentAnimFinished;
+    private AnimatedModelV2 Model;
 
     void Awake()
     {
         GetComponets();
+
+        Play("");
     }
 
     void Update()
@@ -24,7 +27,7 @@ public class TS2AnimationManager : MonoBehaviour
 
     public void AddAnimationRecord(string Name, AnimationRecord Record, AnimationSlot Slot)
     {
-        var clip = LoadRecord(Name, Record);
+        var clip = LoadRecord(Name, Record, Model?.ModelScale);
         Animation.AddClip(clip, Name);
         var addedClip       = Animation[Name];
         addedClip.blendMode = AnimationBlendMode.Blend;
@@ -56,11 +59,12 @@ public class TS2AnimationManager : MonoBehaviour
     }
 
     // TODO: Cache
-    public static AnimationClip LoadRecord(string Name, AnimationRecord Record)
+    public static AnimationClip LoadRecord(string Name, AnimationRecord Record, Vector3? Scale)
     {
+        var scale    = Scale ?? Vector3.one;
         var animData = TSAssetManager.LoadFile(Record.Path);
         var ts2Anim  = new TS2.Animation(animData);
-        var clip     = TSAnimationUtils.ConvertAnimation(ts2Anim, Record.Skeleton.Value, Name, UseRootMotion: Record.UseRootMotion);
+        var clip     = TSAnimationUtils.ConvertAnimation(ts2Anim, Record.Skeleton.Value, Name, UseRootMotion: Record.UseRootMotion, Scale: scale);
 
         return clip;
     }
@@ -84,6 +88,7 @@ public class TS2AnimationManager : MonoBehaviour
     private void GetComponets()
     {
         Animation = GetComponent<Animation>();
+        Model     = GetComponent<AnimatedModelV2>();
     }
 
     public enum AnimationSlot

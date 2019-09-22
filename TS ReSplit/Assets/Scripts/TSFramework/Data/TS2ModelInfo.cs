@@ -46,10 +46,13 @@ namespace TSData
             for (int i = 0; i < BoneToMehses.Length; i++)
             {
                 var boneMeshes = BoneToMehses[i];
-                for (int aye = 0; aye < boneMeshes.Length; aye++)
+                if (boneMeshes != null)
                 {
-                    var meshIdx = boneMeshes[aye];
-                    meshToBoneMap.Add(meshIdx, i);
+                    for (int aye = 0; aye < boneMeshes.Length; aye++)
+                    {
+                        var meshIdx = boneMeshes[aye];
+                        meshToBoneMap.Add(meshIdx, i);
+                    }
                 }
             }
 

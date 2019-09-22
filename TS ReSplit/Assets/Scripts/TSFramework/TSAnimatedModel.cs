@@ -67,7 +67,7 @@ public class TSAnimatedModel : MonoBehaviour {
         }
 #endif
 
-        //DrawMeshConnections();
+        DrawMeshConnections();
         //DisplayVertWeights();
         //DrawVertFlags();
         //DrawDebugSkelation();
@@ -79,6 +79,11 @@ public class TSAnimatedModel : MonoBehaviour {
         var meshRender = GetComponent<SkinnedMeshRenderer>();
         var modelData  = TSAssetManager.LoadFile(ModelPath);
         TS2Model       = new TS2.Model(modelData);
+
+        UnityEngine.Debug.Log($"-- {ModelPath} --");
+        UnityEngine.Debug.Log(TS2Model.GetMeshInfosList());
+
+        var boneMap = TSAnimationUtils.CreatePartToBoneMap(TS2Model);
 
         var modelPakPath = TSAssetManager.GetPakForPath(ModelPath).Item1;
         var texPaths     = TSTextureUtils.GetTexturePathsForMats(TS2Model.Materials);
@@ -235,8 +240,9 @@ public class TSAnimatedModel : MonoBehaviour {
 
                     bones.Add(bone);
 
-                    /*var boneLabel   = $"Idx: {i}, {meshInfo.Unk1} - {meshInfo.Unk2} - {meshInfo.Unk3} - {meshInfo.ID}";
-                    Handles.Label(pos, boneLabel);*/
+                    //var boneLabel   = $"Idx: {i}, {meshInfo.ChildIdx} - {meshInfo.Unk4} - {meshInfo.Unk5} - {meshInfo.IsBone}";
+                    var boneLabel = $"Idx: {i}, {meshInfo.Unk2} - {meshInfo.IsBone}";
+                    Handles.Label(pos, boneLabel);
                 }
                 else
                 {
@@ -269,7 +275,7 @@ public class TSAnimatedModel : MonoBehaviour {
 
                 if (bone.Unk3 != 0xFF)
                 {
-                    UnityEngine.Debug.DrawLine(bone.Pos, bones[bone.Unk3].Pos, Color.cyan);
+                    //UnityEngine.Debug.DrawLine(bone.Pos, bones[bone.Unk3].Pos, Color.cyan);
                 }
 
                 /*if (bone.Unk2 != 0xFF)
@@ -284,7 +290,8 @@ public class TSAnimatedModel : MonoBehaviour {
 
                 //var boneLabel = $"Idx: {i}, {bone.Unk1} - {bone.Unk2} - {bone.Unk3} - {bone.Unk4} - {bone.Unk5} - {bone.Unk6}";
                 var boneLabel = $"Idx: {i}";
-                #if UNITY_EDITOR
+                //UNITY_EDITOR
+                #if FALSE
                     Handles.Label(bone.Pos + (Vector3.up * 0.00002f), boneLabel,
                         new GUIStyle() {
                             alignment = TextAnchor.MiddleCenter,

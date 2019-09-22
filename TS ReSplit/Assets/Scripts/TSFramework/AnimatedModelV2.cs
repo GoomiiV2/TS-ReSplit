@@ -16,6 +16,9 @@ public class AnimatedModelV2 : MonoBehaviour {
     public Material DefaultMat;
     public Material DefaultOverlayMat;
 
+    private Vector3 _ModelScale;
+    public Vector3 ModelScale { get { return _ModelScale; } }
+
     private MeshFilter MeshFilter;
     private SkinnedMeshRenderer MeshRenderer;
 
@@ -42,12 +45,30 @@ public class AnimatedModelV2 : MonoBehaviour {
 
         CreateComponets();
 
+        var isChr          = ModelPath.ToUpper().Contains("CHR"); // TODO: use a better way?
         var modelFileData  = TSAssetManager.LoadFile(ModelPath);
         var tS2Model       = new TS2.Model(modelFileData);
+        _ModelScale.x      = tS2Model.Scale;
 
         var modelPakPath = TSAssetManager.GetPakForPath(ModelPath).Item1;
         var texPaths     = TSTextureUtils.GetTexturePathsForMats(tS2Model.Materials);
-        var data         = TSMeshUtils.SubMeshToMesh(tS2Model.Meshes, new MeshCreationData()
+
+        if (ModelInfo == null && isChr)
+        {
+            ModelInfo = new TS2ModelInfo()
+            {
+                Name     = ModelPath,
+                Path     = ModelPath,
+                SkelType = TS2AnimationData.SkelationType.Human
+            };
+        }
+
+        if (ModelInfo != null)
+        {
+            ModelInfo.BoneToMehses = ModelInfo.BoneToMehses ?? Bonemap.Create(TSAnimationUtils.CreatePartToBoneMap(tS2Model));
+        }
+
+        var data = TSMeshUtils.SubMeshToMesh(tS2Model.Meshes, new MeshCreationData()
         {
             CreateMainMesh        = true,
             CreateOverlaysMesh    = true,
@@ -106,7 +127,7 @@ public class AnimatedModelV2 : MonoBehaviour {
 
         if (ModelInfo != null && ModelInfo.SkelType != TS2AnimationData.SkelationType.None)
         {
-            var bones               = TSAnimationUtils.CreateModelBindPose(transform.gameObject, ModelInfo, data.Mesh, tS2Model.Scale);
+            var bones               = TSAnimationUtils.CreateModelBindPose(transform.gameObject, ModelInfo, data.Mesh, tS2Model.Scale, tS2Model);
             MeshRenderer.bones      = bones;
             //MeshRenderer.rootBone   = bones[0];
         }

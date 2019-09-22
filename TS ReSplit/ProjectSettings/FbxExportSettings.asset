@@ -26,10 +26,10 @@
             "rootMotionTransfer": "",
             "animatedSkinnedMesh": true,
             "mayaCompatibleNaming": true,
-            "include": 0,
+            "include": 2,
             "lodLevel": 0,
             "objectPosition": 1,
-            "exportUnrendered": false
+            "exportUnrendered": true
         },
         "convertToPrefabSettingsSerialize": {
             "exportFormat": 0,

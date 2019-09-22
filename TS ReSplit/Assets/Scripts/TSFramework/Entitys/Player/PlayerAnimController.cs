@@ -17,6 +17,7 @@ public class PlayerAnimController : MonoBehaviour
     private NavMeshAgent NavAgent; // For bots
     private TS2AnimationManager AnimationManager;
     private Animation Animation;
+    private AnimatedModelV2 Model;
 
     private MoveState LastMovementState = MoveState.Unknown;
     private MoveSetTypes CurrentMoveSet = MoveSetTypes.Walk;
@@ -123,7 +124,7 @@ public class PlayerAnimController : MonoBehaviour
             var animRecord = TS2Data.AnimationDB.PlayerAnimations[Animation];
             var animData   = TSAssetManager.LoadFile(animRecord.Path);
             var ts2Anim    = new TS2.Animation(animData);
-            var clip       = TSAnimationUtils.ConvertAnimation(ts2Anim, animRecord.Skeleton.Value, Animation);
+            var clip       = TSAnimationUtils.ConvertAnimation(ts2Anim, animRecord.Skeleton.Value, Animation, Scale: Model?.ModelScale);
 
             AnimStore.Add(Animation, clip);
 
@@ -137,6 +138,7 @@ public class PlayerAnimController : MonoBehaviour
         NavAgent         = GetComponent<NavMeshAgent>();
         AnimationManager = GetComponent<TS2AnimationManager>();
         Animation        = GetComponent<Animation>();
+        Model            = GetComponent<AnimatedModelV2>();
     }
 
     private bool IsStill()

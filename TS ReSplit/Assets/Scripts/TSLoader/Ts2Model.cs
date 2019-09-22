@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace TS2
 {
@@ -61,6 +62,20 @@ namespace TS2
             {
 
             }
+        }
+
+        public string GetMeshInfosList()
+        {
+            var sb = new StringBuilder();
+
+            sb.AppendLine("[idx] \t[bone?] \t[pIdx] \t[cIdx] \t[Unk2] \t[Unk4] \t[Unk5]");
+            for (int i = 0; i < MeshInfos.Length; i++)
+            {
+                var mi = MeshInfos[i];
+                sb.AppendLine($"[{i}] \t[{mi.IsBone}] \t - {mi.ParentIdx} \t - {mi.ChildIdx} \t - {mi.Unk2} \t - {mi.Unk4} \t - {mi.Unk5}");
+            }
+
+            return sb.ToString();
         }
 
         private void LoadMatInfos(BinaryReader R, uint Offset)

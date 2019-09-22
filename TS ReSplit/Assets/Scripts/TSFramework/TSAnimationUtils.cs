@@ -97,13 +97,13 @@ public static class TSAnimationUtils
         return bones.ToArray();
     }
 
-    public static Transform[] CreateModelBindPose(GameObject Gobj, TS2ModelInfo TS2ModelInfo, Mesh Mesh, float ModelScale)
+    public static Transform[] CreateModelBindPose(GameObject Gobj, TS2ModelInfo TS2ModelInfo, Mesh Mesh, float ModelScale, TS2.Model Model = null)
     {
         var bones            = new List<Transform>();
         var bonePaths        = new string[TS2ModelInfo.Skeleton.Value.BoneMap.Length];
         var bindPoseAnimData = TSAssetManager.LoadFile(TS2ModelInfo.Skeleton.Value.BindPosePath);
         var bindPoseAnim     = new TS2.Animation(bindPoseAnimData);
-        var scale            = new Vector3(ModelScale, 1, 1);
+        var scale            = new Vector3(1, 1/*ModelScale*/, 1);
 
         var bindPoses = new List<Matrix4x4>();
         var matrices  = GetBindPose(bindPoseAnim, TS2ModelInfo.Skeleton.Value, scale);
@@ -126,11 +126,13 @@ public static class TSAnimationUtils
             bones.Add(bone);
         }
 
-        var objRot = Gobj.transform.rotation;
-        for (int i = 0; i < TS2ModelInfo.Skeleton.Value.BoneMap.Length; i++)
+        //var boneMap = TS2ModelInfo.Skeleton.Value.BoneMap;
+        var boneMap = TS2ModelInfo.Skeleton.Value.BoneMap;
+        var objRot  = Gobj.transform.rotation;
+        for (int i = 0; i < boneMap.Length; i++)
         {
             var mat       = matrices[i];
-            var childern  = TS2ModelInfo.Skeleton.Value.BoneMap[i];
+            var childern  = boneMap[i];
             var posAndRot = GetPosAndRotFromRootFrame(bindPoseAnim.BindPose[i]);
 
             bones[i].localPosition = posAndRot.Pos;
@@ -157,8 +159,9 @@ public static class TSAnimationUtils
         return bones.ToArray();
     }
 
-    public static AnimationClip ConvertAnimation(TS2.Animation Anim, TS2AnimationData.SkelData SkelData, string Name, float PlaybackScale = 0.05f, bool IsLegacy = true, bool UseRootMotion = false, bool IsLooping = true)
+    public static AnimationClip ConvertAnimation(TS2.Animation Anim, TS2AnimationData.SkelData SkelData, string Name, float PlaybackScale = 0.05f, bool IsLegacy = true, bool UseRootMotion = false, bool IsLooping = true, Vector3? Scale = null)
     {
+        Scale              = Scale ?? Vector3.one;
         var bonesToMecanim = MecanimMap.ToDictionary(x => x.Value, x => x.Key);
         var animClip = new AnimationClip()
         {
@@ -191,8 +194,9 @@ public static class TSAnimationUtils
         return animClip;
     }
 
-    public static void RootTrackToCurves(ref AnimationClip AnimClip, TS2.Animation.RootFrame[] Frames, string BonePath, float PlaybackScale, bool RootMotion = false)
+    public static void RootTrackToCurves(ref AnimationClip AnimClip, TS2.Animation.RootFrame[] Frames, string BonePath, float PlaybackScale, bool RootMotion = false, Vector3? Scale = null)
     {
+        var scale = Scale ?? Vector3.one;
         var numKeyFrames = NUM_POS_AXIS + NUM_ROT_AXIS;
         var kfPosAndRot  = new Keyframe[numKeyFrames][];
 
@@ -212,16 +216,16 @@ public static class TSAnimationUtils
 
             if (RootMotion)
             {
-                kfPosAndRot[0][i] = new Keyframe(time, posAndRot.Pos.x) { inTangent = inTangent, outTangent = outTangent };
-                kfPosAndRot[1][i] = new Keyframe(time, posAndRot.Pos.y) { inTangent = inTangent, outTangent = outTangent };
-                kfPosAndRot[2][i] = new Keyframe(time, posAndRot.Pos.z) { inTangent = inTangent, outTangent = outTangent };
+                kfPosAndRot[0][i] = new Keyframe(time, posAndRot.Pos.x * scale.x) { inTangent = inTangent, outTangent = outTangent };
+                kfPosAndRot[1][i] = new Keyframe(time, posAndRot.Pos.y * scale.y) { inTangent = inTangent, outTangent = outTangent };
+                kfPosAndRot[2][i] = new Keyframe(time, posAndRot.Pos.z * scale.z) { inTangent = inTangent, outTangent = outTangent };
             }
             else
             {
                 // Disable the root animation the animations have by only taking the position from the first frame
-                kfPosAndRot[0][i] = new Keyframe(time, firstPosAndRot.Pos.x) { inTangent = inTangent, outTangent = outTangent };
-                kfPosAndRot[1][i] = new Keyframe(time, posAndRot.Pos.y) { inTangent = inTangent, outTangent = outTangent };
-                kfPosAndRot[2][i] = new Keyframe(time, firstPosAndRot.Pos.z) { inTangent = inTangent, outTangent = outTangent };
+                kfPosAndRot[0][i] = new Keyframe(time, firstPosAndRot.Pos.x * scale.x) { inTangent = inTangent, outTangent = outTangent };
+                kfPosAndRot[1][i] = new Keyframe(time, posAndRot.Pos.y * scale.y) { inTangent = inTangent, outTangent = outTangent };
+                kfPosAndRot[2][i] = new Keyframe(time, firstPosAndRot.Pos.z * scale.z) { inTangent = inTangent, outTangent = outTangent };
             }
 
             kfPosAndRot[3][i] = new Keyframe(time, posAndRot.Rot.x) { inTangent = inTangent, outTangent = outTangent };
@@ -377,6 +381,139 @@ public static class TSAnimationUtils
         var rot = new Quaternion(Root.Rotation.X, Root.Rotation.Y, Root.Rotation.Z, Root.Rotation.W);
 
         return (pos, rot);
+    }
+
+    // Ok, the way the "bone" are setup in the models for ts2 are, well wack
+    // the model is made up from a list of "parts" and the parts can be tied to a "bone"
+    // the way I found to map these to bones is by the order that they are defiend in the model with some hacks
+    // the order seems to be (spine, right arm, left arm, neck, right leg, left leg)
+    // that "neck" is really apart of the spine, so yea, fun with that part its "isBone" type also seems to always be 3 and I haven't seen other submeshes with that type
+    // Thats only half way there now
+    // So looping through each part and using a "isBone" == 0 as a marker for the start of a new bone should be albe to map put the models
+    public static short[][] CreatePartToBoneMap(TS2.Model Model)
+    {
+        const int PRE_ALLOC_NUM = 5;
+        var sections = new List<short>[]
+        {
+            new List<short>(PRE_ALLOC_NUM), // Root
+            new List<short>(PRE_ALLOC_NUM), // Spine
+            new List<short>(PRE_ALLOC_NUM), // Right Arm
+            new List<short>(PRE_ALLOC_NUM), // Left Arm
+            new List<short>(PRE_ALLOC_NUM), // Right Leg
+            new List<short>(PRE_ALLOC_NUM), // Left Leg
+        };
+
+        var boneMap = new short[19][];
+
+        var sectionIdx    = 0;
+        bool hasFoundNeck = false;
+
+        // Group into sections
+        for (short i = 0; i < Model.MeshInfos.Length; i++)
+        {
+            var mInfo = Model.MeshInfos[i];
+
+            if (mInfo.MeshOffsets.Offset != 0 || mInfo.MeshOffsets2.Offset != 0 || mInfo.TransparentMeshOffsets.Offset != 0) // Only use meshes with verts
+            {
+                // Get the root first
+                if (sectionIdx == (int)HumanoidMeshSection.Root)
+                {
+                    sections[sectionIdx].Add(i);
+                    if (mInfo.IsBone != 0)
+                    {
+                        sectionIdx++;
+                    }
+                }
+                else if (sectionIdx == (int)HumanoidMeshSection.RightLeg && !hasFoundNeck) // The random neck
+                {
+                    sections[(int)HumanoidMeshSection.Spine].Add(i);
+                    hasFoundNeck = true;
+                }
+                else
+                {
+                    // ofc there can be extra parts after this, why not!
+                    // ingore them for now, prob can tack them on to their parents later?
+                    if (sectionIdx < sections.Length)
+                    {
+                        sections[sectionIdx].Add(i);
+
+                        if (mInfo.ChildIdx == 255)
+                        {
+                            sectionIdx++;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Now break the sections down into bone groups
+        for (int i = 0; i < sections.Length; i++)
+        {
+            var section        = sections[i];
+            byte[] boneMarkers = new byte[] { };
+            var markerIdx      = 0;
+            var tempList       = new List<short>(PRE_ALLOC_NUM);
+
+            switch ((HumanoidMeshSection)i)
+            {
+                case HumanoidMeshSection.Root:
+                    boneMap[i] = section.ToArray();
+                    section.Clear();
+                    break;
+
+                case HumanoidMeshSection.Spine:
+                    boneMarkers = new byte[] { 1, 0, 3, 0 };
+                    section = section.OrderBy(x => Model.MeshInfos[x].ChildIdx).ToList();
+                    break;
+
+                case HumanoidMeshSection.RightArm:
+                case HumanoidMeshSection.LeftArm:
+                    boneMarkers = new byte[] { 1, 2, 2, 0 };
+                    break;
+
+                case HumanoidMeshSection.RightLeg:
+                case HumanoidMeshSection.LeftLeg:
+                    boneMarkers = new byte[] { 0, 0, 0 };
+                    break;
+
+                default:
+                    Debug.LogError("D: w,why does this model have some unknown section!");
+                    break;
+            }
+
+            for (int idx = 0; idx < section.Count; idx++)
+            {
+                var pIdx    = section[idx];
+                var info    = Model.MeshInfos[pIdx];
+                var boneIdx = GetSectionBoneStart((HumanoidMeshSection)i) + markerIdx;
+
+                tempList.Add(pIdx);
+                if (info.IsBone == boneMarkers[markerIdx])
+                {
+                    markerIdx++;
+                    boneMap[boneIdx] = tempList.ToArray();
+                    tempList.Clear();
+                }
+            }
+        }
+
+        return boneMap;
+    }
+
+    public static int GetSectionBoneStart(HumanoidMeshSection Section)
+    {
+        var OFFSETS = new int[] { 0, 1, 5, 9, 13, 16 };
+        return OFFSETS[(int)Section];
+    }
+
+    public enum HumanoidMeshSection
+    {
+        Root = 0,
+        Spine,
+        RightArm,
+        LeftArm,
+        RightLeg,
+        LeftLeg
     }
 }
 

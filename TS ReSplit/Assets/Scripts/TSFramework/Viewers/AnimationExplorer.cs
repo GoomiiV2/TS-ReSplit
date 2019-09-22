@@ -106,9 +106,10 @@ public class AnimationExplorer : MonoBehaviour
     {
         Settings.Animation = null;
 
-        var animData   = TSAssetManager.LoadFile(Animation);
-        var ts2Anim    = new TS2.Animation(animData);
-        var clip       = TSAnimationUtils.ConvertAnimation(ts2Anim, TS2AnimationData.HumanSkel, Animation, UseRootMotion: Settings.AnimUseRootMotion, IsLooping: Settings.AnimLoop);
+        var animData       = TSAssetManager.LoadFile(Animation);
+        var ts2Anim        = new TS2.Animation(animData);
+        var scale          = new Vector3(1, Settings.Model?.Scale ?? 1, 1);
+        var clip           = TSAnimationUtils.ConvertAnimation(ts2Anim, TS2AnimationData.HumanSkel, Animation, UseRootMotion: Settings.AnimUseRootMotion, IsLooping: Settings.AnimLoop, Scale: scale);
         Settings.Animation = ts2Anim;
 
         var aninmation = PreviewModel.GetComponent<Animation>();

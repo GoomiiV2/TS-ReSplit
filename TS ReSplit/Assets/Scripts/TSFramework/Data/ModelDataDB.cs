@@ -30,6 +30,7 @@ namespace TS2Data
 
     public static class ModelDB
     {
+        // Note: If BoneToMehses is null then an auto maped binging will be created and used
         public static readonly Dictionary<string, TS2ModelInfo>[] Models = new Dictionary<string, TS2ModelInfo>[]
         {
             // Players
