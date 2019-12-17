@@ -6,7 +6,9 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_EDITOR
 [InitializeOnLoad]
+#endif
 public class TSAssetManager
 {
     public static readonly List<(TSGame Game, string[] PS2DiscIDs)> PS2GameIDsMapping = new List<(TSGame Game, string[] PS2DiscIDs)>()

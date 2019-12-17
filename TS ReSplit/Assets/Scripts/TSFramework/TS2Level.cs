@@ -13,6 +13,8 @@ using TextureStore = System.Collections.Generic.Dictionary<uint, UnityEngine.Tex
 [ExecuteInEditMode]
 public class TS2Level : MonoBehaviour
 {
+    public static string BASE_GO_NAME = "Level Base";
+
     public string LevelPak = "ts2/pak/story/l_35_ST.pak";
     public string LevelID  = "35";
     public Refrances DataAssests;
@@ -44,7 +46,7 @@ public class TS2Level : MonoBehaviour
         TidyUpIfEditor();
 
         // Create a root gameobject to parent level objects under
-        LevelBase   = new GameObject("Level Base")  { isStatic = true };
+        LevelBase   = new GameObject(BASE_GO_NAME)  { isStatic = true };
         SectionBase = new GameObject("Sections")    { isStatic = true };
         DebugBase   = new GameObject("Debug")       { isStatic = true };
         PathingBase = new GameObject("Pathing")     { isStatic = true };

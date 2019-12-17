@@ -69,7 +69,7 @@ public class TSAnimatedModel : MonoBehaviour {
 
         DrawMeshConnections();
         //DisplayVertWeights();
-        //DrawVertFlags();
+        DrawVertFlags();
         //DrawDebugSkelation();
     }
 
@@ -240,9 +240,11 @@ public class TSAnimatedModel : MonoBehaviour {
 
                     bones.Add(bone);
 
+#if UNITY_EDITOR
                     //var boneLabel   = $"Idx: {i}, {meshInfo.ChildIdx} - {meshInfo.Unk4} - {meshInfo.Unk5} - {meshInfo.IsBone}";
                     var boneLabel = $"Idx: {i}, {meshInfo.Unk2} - {meshInfo.IsBone}";
                     Handles.Label(pos, boneLabel);
+#endif
                 }
                 else
                 {
@@ -346,12 +348,16 @@ public class TSAnimatedModel : MonoBehaviour {
                 {
                     for (int aye = 0; aye < mesh.MainMesh.Verts.Length; aye++)
                     {
-                        var vert = mesh.MainMesh.Verts[aye];
-                        var weight = mesh.MainMesh.Uvs[aye];
+                        var vert    = mesh.MainMesh.Verts[aye];
+                        var weight  = mesh.MainMesh.Uvs[aye];
+                        var normal = mesh.MainMesh.Normals[aye];
 
                         var pos = transform.position + TSMeshUtils.Ts2VertToV3(vert);
 
-                        Handles.Label(pos, $"{vert.Scale}");
+                        if (normal.SameStrip != 0)
+                        {
+                            Handles.Label(pos, $"{normal.SameStrip}");
+                        }
                     }
                 }
             }

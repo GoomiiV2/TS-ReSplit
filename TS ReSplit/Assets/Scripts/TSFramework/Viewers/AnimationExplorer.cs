@@ -113,9 +113,10 @@ public class AnimationExplorer : MonoBehaviour
         Settings.Animation = ts2Anim;
 
         var aninmation = PreviewModel.GetComponent<Animation>();
-        aninmation.RemoveClip(clip);
+        //aninmation.RemoveClip(clip);
         aninmation.Stop();
         aninmation.AddClip(clip, clip.name);
+        aninmation.clip = clip;
         aninmation.Play(clip.name, PlayMode.StopAll);
     }
 

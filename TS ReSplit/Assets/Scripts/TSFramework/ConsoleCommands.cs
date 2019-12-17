@@ -7,6 +7,7 @@ using System.IO;
 using UnityEditor;
 using Assets.Scripts.TSFramework.Singletons;
 using Assets.Scripts.TSFramework;
+using Assets.Scripts.TSFramework.Debug;
 
 public class ConsoleCommands : MonoBehaviour
 {
@@ -110,4 +111,33 @@ public class ConsoleCommands : MonoBehaviour
     {
         ReSplit.Cache.Clear();
     }
+
+    #region Exporting
+    [ConsoleMethod("export.model", "Export a model as GLTF")]
+    public static void ExportModel(string ModelName)
+    {
+        if (ModelName.ToUpper() == "ALL")
+        {
+            Exporter.ExportAllChrModels();
+        }
+        else
+        {
+            var baseModelPath = $"ts2/pak/chr.pak/ob/chrs/{ModelName}.raw";
+            Exporter.ExportModel(baseModelPath);
+        }
+    }
+
+    [ConsoleMethod("export.modelAnimations", "Export a model as GLTF with animations")]
+    public static void ExportModelAnimations(string ModelName)
+    {
+        var baseModelPath = $"ts2/pak/chr.pak/ob/chrs/{ModelName}.raw";
+        Exporter.ExportModel(baseModelPath, WithAnimations: true);
+    }
+
+    [ConsoleMethod("export.level", "Export a level as GLTF, eg, 'ts2/pak/l_20_ST.pak'")]
+    public static void ExportLevel(string LevelPath)
+    {
+        Exporter.ExportLevel(LevelPath);
+    }
+    #endregion
 }

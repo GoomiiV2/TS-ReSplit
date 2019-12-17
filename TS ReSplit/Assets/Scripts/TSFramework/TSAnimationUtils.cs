@@ -115,6 +115,7 @@ public static class TSAnimationUtils
             var name       = i == 0 ? "Root" : TS2ModelInfo.Skeleton.Value.Names[i-1];
             var boneName   = $"{name}";
             var bone       = new GameObject(boneName) { hideFlags = HideFlags.DontSave }.transform;
+            //var bone       = i == 0 ? Gobj.transform : new GameObject(boneName) { hideFlags = HideFlags.DontSave }.transform;
 
             if (i == 0)
             {

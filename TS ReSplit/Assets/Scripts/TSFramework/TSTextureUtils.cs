@@ -26,7 +26,7 @@ namespace Assets.Scripts.TSFramework
                 }
             }
 
-            t2d.Apply(true, true);
+            t2d.Apply(true, false);
             return t2d;
         }
 

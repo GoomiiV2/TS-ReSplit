@@ -5,11 +5,10 @@
         "m_Name": "",
         "m_EditorClassIdentifier": "",
         "Verbose": false,
-        "autoUpdaterEnabled": true,
         "launchAfterInstallation": true,
         "HideSendToUnityMenu": true,
         "BakeAnimation": true,
-        "IntegrationSavePath": "G:\\Projects2\\Code\\Timesplitters FP framework\\Unity Project\\TS ReSplit",
+        "integrationSavePath": "",
         "selectedDCCApp": 0,
         "prefabSavePaths": [
             "."
@@ -23,19 +22,12 @@
         "dccOptionPaths": [],
         "exportModelSettingsSerialize": {
             "exportFormat": 1,
-            "rootMotionTransfer": "",
             "animatedSkinnedMesh": true,
             "mayaCompatibleNaming": true,
-            "include": 2,
+            "include": 1,
             "lodLevel": 0,
             "objectPosition": 1,
             "exportUnrendered": true
-        },
-        "convertToPrefabSettingsSerialize": {
-            "exportFormat": 0,
-            "rootMotionTransfer": "",
-            "animatedSkinnedMesh": false,
-            "mayaCompatibleNaming": true
         }
     }
 }

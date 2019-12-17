@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -146,6 +147,11 @@ namespace TS2
             {
                 var vert = Vertex.Read(R);
                 verts.Add(vert);
+
+                if (vert.Scale != 16256)
+                {
+                    Debug.WriteLine("vert.Scale wasn't 1");
+                }
             }
 
             // UVs 
@@ -155,6 +161,11 @@ namespace TS2
             {
                 var uvw = UVW.Read(R);
                 uvs.Add(uvw);
+
+                if (uvw.W != 1)
+                {
+                    Debug.WriteLine("UVW.W wasn't 1");
+                }
             }
 
             // Vertex Colors

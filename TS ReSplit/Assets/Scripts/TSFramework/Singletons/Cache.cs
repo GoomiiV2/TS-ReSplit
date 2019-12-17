@@ -76,7 +76,7 @@ namespace Assets.Scripts.TSFramework.Singletons
 
         private void Log(string Msg)
         {
-            Debug.Log($"[Cache] {Msg}");
+            UnityEngine.Debug.Log($"[Cache] {Msg}");
         }
     }
 

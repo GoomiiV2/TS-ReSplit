@@ -41,6 +41,28 @@ public class TS2AnimationData
                 "Left Foot",            // 17
             },
 
+            /*Names        = new string[]
+            {
+                "Hips",                 // 0
+                "Waist",                // 1
+                "Neck",                 // 2
+                "Head",                 // 3
+                "rblade",     // 4
+                "rshoulder",     // 5
+                "relbow",          // 6
+                "rwrist",          // 7
+                "lblade",      // 8
+                "lshoulder",      // 9
+                "lelbow",           // 10
+                "lwrist",           // 11
+                "rhip",            // 12
+                "rknee",           // 13
+                "rheel",           // 14
+                "lhip",             // 15
+                "lknee",            // 16
+                "lheel",            // 17
+            },*/
+
             // TODO: calualte this
             BonePaths = new string[]
             {
