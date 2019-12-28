@@ -196,17 +196,17 @@ public class PlayerAnimController : MonoBehaviour
     {
         var state = MoveState.Unknown;
 
-        /*if (IsStill())
+        if (IsStill())
         {
             state = MoveState.Still;
             return state;
-        }*/
+        }
 
-        /*var moveDir = GetMoveDir();
+        var moveDir = GetMoveDir();
         if (moveDir == MoveDir.Forward) { state = MoveState.Forward; }
         if (moveDir == MoveDir.Back)    { state = MoveState.Back; }
         if (moveDir == MoveDir.Left)    { state = MoveState.Left; }
-        if (moveDir == MoveDir.Right)   { state = MoveState.Right; }*/
+        if (moveDir == MoveDir.Right)   { state = MoveState.Right; }
 
         return state;
     }

@@ -21,7 +21,7 @@ public class FPWeapon : MonoBehaviour
 
     private GameObject PlayerGO;
     private CharacterController CharController;
-    private Vector3 InitalWeaponPos;
+    public Vector3 InitalWeaponPos;
     private float BobTimelinePos;
     private float LastBobTimelinePos;
     

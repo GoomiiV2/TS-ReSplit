@@ -242,7 +242,7 @@ public class TSAnimatedModel : MonoBehaviour {
 
                     //var boneLabel   = $"Idx: {i}, {meshInfo.ChildIdx} - {meshInfo.Unk4} - {meshInfo.Unk5} - {meshInfo.IsBone}";
                     var boneLabel = $"Idx: {i}, {meshInfo.Unk2} - {meshInfo.IsBone}";
-                    Handles.Label(pos, boneLabel);
+                    //Handles.Label(pos, boneLabel);
                 }
                 else
                 {

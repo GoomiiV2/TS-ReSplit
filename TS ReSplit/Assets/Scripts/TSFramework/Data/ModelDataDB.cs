@@ -19,13 +19,14 @@ namespace TS2Data
 
     public static class WeaponModels
     {
-        public const string UziFP               = "Uzi FP";
-        public const string UziTP               = "Uzi TP";
-        public const string UziPromo            = "Uzi Promo";
-        public const string SliencedLugerFP     = "Slienced Luger FP";
-        public const string SliencedLugerTP     = "Slienced Luger TP";
-        public const string SliencedLugerPromo  = "Slienced Luger Promo";
-        public const string SliencedPistolPromo = "Slienced Pistol Promo";
+        public const string UziFP                 = "Uzi FP";
+        public const string UziTP                 = "Uzi TP";
+        public const string UziPromo              = "Uzi Promo";
+        public const string SliencedLugerFP       = "Slienced Luger FP";
+        public const string SliencedLugerTP       = "Slienced Luger TP";
+        public const string SliencedLugerPromo    = "Slienced Luger Promo";
+        public const string SliencedPistolPromo   = "Slienced Pistol Promo";
+        public const string PlasmaMachineGunPromo = "Plasma Machine Gun Promo";
     };
 
     public static class ModelDB
@@ -204,6 +205,16 @@ namespace TS2Data
                     {
                         Name         = WeaponModels.SliencedPistolPromo,
                         Path         = "ts2/pak/gun.pak/ob/guns/silencedpistol_promo.raw",
+                        SkelType     = TS2AnimationData.SkelationType.None,
+                        IngoreMeshes = new int[] { }
+                    }
+                },
+                {
+                    WeaponModels.PlasmaMachineGunPromo,
+                    new TS2ModelInfo()
+                    {
+                        Name         = WeaponModels.PlasmaMachineGunPromo,
+                        Path         = "ts2/pak/gun.pak/ob/guns/plasmamachinegun_promo.raw",
                         SkelType     = TS2AnimationData.SkelationType.None,
                         IngoreMeshes = new int[] { }
                     }

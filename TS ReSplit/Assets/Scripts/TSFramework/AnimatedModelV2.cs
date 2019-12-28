@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using TS2Data;
 using TSData;
+using Assets.Scripts.TSFramework.Singletons;
 
 [ExecuteInEditMode]
 public class AnimatedModelV2 : MonoBehaviour {
@@ -45,9 +46,14 @@ public class AnimatedModelV2 : MonoBehaviour {
 
         CreateComponets();
 
-        var isChr          = ModelPath.ToUpper().Contains("CHR"); // TODO: use a better way?
-        var modelFileData  = TSAssetManager.LoadFile(ModelPath);
-        var tS2Model       = new TS2.Model(modelFileData);
+        var tS2Model = ReSplit.Cache.TryCache<TS2.Model>(ModelPath, (path) =>
+        {
+            var modelFileData = TSAssetManager.LoadFile(ModelPath);
+            var model         = new TS2.Model(modelFileData);
+            return model;
+        }, TSFramework.Singletons.CacheType.ClearOnLevelLoad);
+
+        var isChr = ModelPath.ToUpper().Contains("CHR"); // TODO: use a better way?
         _ModelScale.x      = tS2Model.Scale;
 
         var modelPakPath = TSAssetManager.GetPakForPath(ModelPath).Item1;

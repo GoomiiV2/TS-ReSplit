@@ -33,6 +33,18 @@ public class ConsoleCommands : MonoBehaviour
         SceneManager.LoadScene("Assets/Scenes/TS2/Exploring/AnimationExplorer.unity", LoadSceneMode.Single);
     }
 
+    [ConsoleMethod("open_devmap", "Open dev map level")]
+    public static void open_devmap()
+    {
+        SceneManager.LoadScene("Assets/Scenes/Debug/DevTest.unity", LoadSceneMode.Single);
+    }
+
+    [ConsoleMethod("open_test", "Open test map")]
+    public static void open_test()
+    {
+        SceneManager.LoadScene("Assets/Scenes/TS2/MP/Ice Station.unity", LoadSceneMode.Single);
+    }
+
     [ConsoleMethod("audio.test", "Test audio file decoding / playback")]
     public static void audio_test()
     {

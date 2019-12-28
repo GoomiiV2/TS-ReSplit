@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace Assets.Scripts.TSFramework.Singletons
+namespace TSFramework.Singletons
 {
     // Cache genrated content so we don't have to regenrate it over and over
     public class Cache

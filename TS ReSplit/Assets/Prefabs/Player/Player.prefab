@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6633207201320367518}
   - component: {fileID: 9062580701767210194}
+  - component: {fileID: 1645350205}
   m_Layer: 0
   m_Name: FP
   m_TagString: Untagged
@@ -74,6 +75,14 @@ Camera:
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
+--- !u!81 &1645350205
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1392150410268855257}
+  m_Enabled: 1
 --- !u!1 &1600219145399431523
 GameObject:
   m_ObjectHideFlags: 0
@@ -115,6 +124,7 @@ GameObject:
   - component: {fileID: 8459353978678958343}
   - component: {fileID: 4611060414818086165}
   - component: {fileID: 6757628177980833667}
+  - component: {fileID: 1293033944}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -168,6 +178,19 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1293033944
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2963874811278249265}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5dd74c77493118e408d0a87dd683e18c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  EquipedIdx: 0
 --- !u!1 &8886126315041133729
 GameObject:
   m_ObjectHideFlags: 0
@@ -193,7 +216,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8886126315041133729}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.177, y: -0.229, z: 0.32}
   m_LocalScale: {x: -1, y: 1, z: 1}
   m_Children: []
@@ -215,6 +238,7 @@ MonoBehaviour:
   ModelType: 1
   ModelName: Uzi FP
   DefaultMat: {fileID: 2100000, guid: aa0d51ef488809c45830daf935949a95, type: 2}
+  DefaultOverlayMat: {fileID: 0}
 --- !u!114 &1876162524
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -297,3 +321,4 @@ MonoBehaviour:
     BobSpeed: 1.2
     BobResetMult: 2
   crosshairImage: {fileID: 2800000, guid: 68042f9d5487d5f4d86d187b34abdd00, type: 3}
+  InitalWeaponPos: {x: 0, y: 0, z: 0}
