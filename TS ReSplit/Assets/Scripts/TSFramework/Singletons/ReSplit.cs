@@ -11,5 +11,6 @@ namespace Assets.Scripts.TSFramework.Singletons
     public static class ReSplit
     {
         public static Cache Cache { get; private set; } = new Cache();
+        public static Audio Audio { get; private set; } = new Audio();
     }
 }

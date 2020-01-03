@@ -16,6 +16,14 @@ public class FPWeapon : MonoBehaviour
         BobSpeed     = 2.0f,
         BobResetMult = 2.0f
     };
+    public AnimationCurve ShootAnim;
+    public float ShootAnimSpeedMulti = 1f;
+    public float ShootAnimMoveDist   = 0.2f;
+
+    public AnimationCurve ReloadAnim;
+    public float ReloadAnimSpeedMulti = 1f;
+    public float ReloadAnimAngle      = 45.0f;
+    public float ReloadAnimDown       = 0.1f;
 
     public Texture2D crosshairImage;
 
@@ -24,7 +32,15 @@ public class FPWeapon : MonoBehaviour
     public Vector3 InitalWeaponPos;
     private float BobTimelinePos;
     private float LastBobTimelinePos;
-    
+
+    private bool ShouldPlayShootAnmin = false;
+    private float ShootTimelinePos;
+    private float LastShootTimelinePos;
+
+    private bool ShouldPlayReloadAnmin = false;
+    private float ReloadTimelinePos;
+    private Quaternion ReloadRot;
+
     void Start()
     {
         InitalWeaponPos = transform.localPosition;
@@ -35,6 +51,26 @@ public class FPWeapon : MonoBehaviour
     {
         LookSway();
         MovementSway();
+        UpdateShootAnmin();
+
+        if (!ShouldPlayReloadAnmin)
+        {
+            var bobDelta            = GetMoveBobSample(BobTimelinePos);
+            transform.localPosition = InitalWeaponPos + bobDelta;
+        }
+        else
+        {
+            ReloadTimelinePos      += Time.deltaTime * ReloadAnimSpeedMulti;
+            var pos                 = transform.localPosition;
+            pos.y                   = InitalWeaponPos.y - (ReloadAnimDown * ReloadAnim.Evaluate(ReloadTimelinePos)); // TODO: don't eval this twice
+            transform.localPosition = pos;
+
+            if (ReloadTimelinePos >= 2.0f)
+            {
+                ReloadTimelinePos     = 0f;
+                ShouldPlayReloadAnmin = false;
+            }
+        }
     }
 
     void OnGUI()
@@ -48,6 +84,34 @@ public class FPWeapon : MonoBehaviour
         GUI.DrawTexture(new Rect(xMin, yMin, width, height), crosshairImage);*/
     }
 
+    public void PlayShootAnim()
+    {
+        if (!ShouldPlayShootAnmin)
+        {
+            ShouldPlayShootAnmin = true;
+        }
+    }
+
+    public void PlayReloadSingle()
+    {
+        ShouldPlayReloadAnmin = true;
+    }
+
+    private void UpdateShootAnmin()
+    {
+        if (ShouldPlayShootAnmin)
+        {
+            ShootTimelinePos    += Time.deltaTime * ShootAnimSpeedMulti;
+            LastShootTimelinePos = ShootTimelinePos;
+        }
+        
+        if (ShootTimelinePos > 1f)
+        {
+            ShootTimelinePos     = 0;
+            ShouldPlayShootAnmin = false;
+        }
+    }
+
     private void GetComponets()
     {
         PlayerGO       = gameObject.transform.parent.parent.gameObject;
@@ -58,15 +122,23 @@ public class FPWeapon : MonoBehaviour
     {
         var mouseMovement   = new Vector3(-Input.GetAxis ("Mouse Y"), Input.GetAxis ("Mouse X"), 0);
         mouseMovement       *= Sway.SwayMult;
- 
-        var swayRot             = Quaternion.Euler(mouseMovement);
-        transform.localRotation = Quaternion.Slerp(transform.localRotation, swayRot, Sway.Speed * Time.deltaTime);
+
+        if (!ShouldPlayReloadAnmin)
+        {
+            var swayRot             = Quaternion.Euler(mouseMovement);
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, swayRot, Sway.Speed * Time.deltaTime);
+        }
+        else
+        {
+            var rRot                = new Quaternion();
+            rRot.eulerAngles        = new Vector3(ReloadAnimAngle, 0, 0);
+            transform.localRotation = Quaternion.Slerp(transform.localRotation, rRot, ReloadAnim.Evaluate(ReloadTimelinePos));
+        }
     }
 
     private void MovementSway()
     {
         var isMoveing = CharController.velocity.magnitude > 0;
-        var animate = true;
 
         if (isMoveing)
         {
@@ -75,23 +147,7 @@ public class FPWeapon : MonoBehaviour
         }
         else if ((Mathf.Ceil(LastBobTimelinePos) - BobTimelinePos) > 0.001f)
         {
-            //var lerpTime    = Sway.BobResetMult * Time.deltaTime;
-            //var bobProgess  = BobTimelinePos - Mathf.Floor(BobTimelinePos);
-            //BobTimelinePos = Mathf.SmoothStep(BobTimelinePos, Mathf.Ceil(LastBobTimelinePos), lerpTime);
-
             BobTimelinePos += Time.deltaTime * Sway.BobSpeed;
-        }
-        /*else
-        {
-            BobTimelinePos = Mathf.Ceil(BobTimelinePos) + 0.5f;
-            LastBobTimelinePos = Mathf.Ceil(LastBobTimelinePos) + 0.5f;
-            animate = false;
-        }*/
-
-        if (animate)
-        {
-            var bobDelta            = GetMoveBobSample(BobTimelinePos);
-            transform.localPosition = InitalWeaponPos + bobDelta;
         }
     }
 
@@ -102,7 +158,12 @@ public class FPWeapon : MonoBehaviour
             Sway.MoveBobY.Evaluate(Time),
             Sway.MoveBobZ.Evaluate(Time));
 
-        bobAmount *= Sway.MoveBobScale;
+        bobAmount   *= Sway.MoveBobScale;
+
+        if (ShouldPlayShootAnmin)
+        {
+            bobAmount.z += (ShootAnimMoveDist * ShootAnim.Evaluate(ShootTimelinePos));
+        }
 
         return bobAmount;
     }

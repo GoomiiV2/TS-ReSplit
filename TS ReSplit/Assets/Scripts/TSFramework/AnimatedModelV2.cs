@@ -74,15 +74,20 @@ public class AnimatedModelV2 : MonoBehaviour {
             ModelInfo.BoneToMehses = ModelInfo.BoneToMehses ?? Bonemap.Create(TSAnimationUtils.CreatePartToBoneMap(tS2Model));
         }
 
-        var data = TSMeshUtils.SubMeshToMesh(tS2Model.Meshes, new MeshCreationData()
+        var data = ReSplit.Cache.TryCache<MeshData>($"{ModelPath}_Meshed", (path) =>
         {
-            CreateMainMesh        = true,
-            CreateOverlaysMesh    = true,
-            CreateTransparentMesh = true,
-            IsMapMesh             = false,
-            IsSkeletalMesh        = ModelInfo != null && ModelInfo.SkelType != TS2AnimationData.SkelationType.None
-        },
-        ModelInfo);
+            var data2 = TSMeshUtils.SubMeshToMesh(tS2Model.Meshes, new MeshCreationData()
+            {
+                CreateMainMesh        = true,
+                CreateOverlaysMesh    = true,
+                CreateTransparentMesh = true,
+                IsMapMesh             = false,
+                IsSkeletalMesh        = ModelInfo != null && ModelInfo.SkelType != TS2AnimationData.SkelationType.None
+            },
+            ModelInfo);
+            return data2;
+        }, TSFramework.Singletons.CacheType.ClearOnLevelLoad);
+        
 
         MeshRenderer.materials = new Material[data.TexData.Length];
 
@@ -90,20 +95,29 @@ public class AnimatedModelV2 : MonoBehaviour {
         {
             var matInfo = data.TexData[i];
             var matData = tS2Model.Materials[i];
-            TS2.Texture tex;
+            Texture2D unityTex;
 
             if (tS2Model.HasIncludedTextures)
             {
-                tex = tS2Model.Textures[i];
+                unityTex = ReSplit.Cache.TryCache($"{ModelPath}_Tex_{i}", (path) =>
+                {
+                    var tex = TSTextureUtils.TS2TexToT2D(tS2Model.Textures[i]);
+                    tex.name = $"{i}";
+                    return tex;
+                }, TSFramework.Singletons.CacheType.ClearOnLevelLoad);
             }
             else
             {
                 var texName = texPaths[i];
-                var texData = TSAssetManager.LoadFile($"{modelPakPath}/{texName}");
-                tex         = new TS2.Texture(texData);
+                unityTex    = ReSplit.Cache.TryCache($"{modelPakPath}/{texName}", (path) =>
+                {
+                    var texData        = TSAssetManager.LoadFile(path);
+                    var ts2tex         = new TS2.Texture(texData);
+                    var tex            = TSTextureUtils.TS2TexToT2D(ts2tex);
+                    tex.name           = texName;
+                    return tex;
+                }, TSFramework.Singletons.CacheType.ClearOnLevelLoad);
             }
-
-            var unityTex                = TSTextureUtils.TS2TexToT2D(tex);
 
             /* if (matInfo.IsTransparent)
             {
@@ -127,7 +141,10 @@ public class AnimatedModelV2 : MonoBehaviour {
         for (int i = 0; i < transform.childCount; i++)
         {
             var child = transform.GetChild(i);
-            DestroyImmediate(child.gameObject);
+            if (child.tag != "DontDelete")
+            {
+                DestroyImmediate(child.gameObject);
+            }
         }
         #endif
 

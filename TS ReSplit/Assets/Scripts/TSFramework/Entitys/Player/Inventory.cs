@@ -1,18 +1,19 @@
-﻿using System;
+﻿using Equipables;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using TS2Data;
 using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-    public const int PRE_ALLOC_INV_SIZE = 10;
-    public int EquipedIdx               = 0;
-    public List<InvItem> Items          = new List<InvItem>();
+    public const int PRE_ALLOC_INV_SIZE       = 10;
+    public int EquipedIdx                     = 0;
+    public List<EquipableBase> Items          = new List<EquipableBase>();
+    public AssestReferances AssestReferances  = new AssestReferances();
 
     #region Getters
+    private EquipableBase EquipedItem => Items[EquipedIdx];
+
     private FPWeapon _FPAnimation = null;
     private FPWeapon FPAnimation
     {
@@ -38,29 +39,28 @@ public class Inventory : MonoBehaviour
             return _FPMesh;
         }
     }
-    #endregion
+#endregion
 
-    #region Inv Management
-    public void AddItem(WeaponIDs Id)
+#region Inv Management
+    public void AddItem(int Id)
     {
-        Items.Add(new InvItem()
-        {
-            ItemID  = Id,
-            IsEmpty = false
-        });
+        var item = EquipablesDB.CreateFromID(Id);
+        AddItem(item);
     }
 
-    public void AddItem(InvItem Itemd)
+    public void AddItem(EquipableBase Item)
     {
-        // To do for droped pick ups
+        Item.Bind(gameObject);
+        Items.Add(Item);
     }
 
-    public void RemoveItem(WeaponIDs Id)
+    public void RemoveItem(int Id)
     {
         for (int i = 0; i < Items.Count; i++)
         {
-            if (Items[i].ItemID == Id)
+            if (Items[i].GetItemID == Id)
             {
+                Items[i].Unbind();
                 Items.RemoveAt(i);
                 return;
             }
@@ -70,54 +70,63 @@ public class Inventory : MonoBehaviour
     // Equip the next weapon in the inventory and cycle around to the first if reaching the end
     public void NextWeapon()
     {
+        var prev = EquipedIdx;
         EquipedIdx++;
         if (EquipedIdx >= Items.Count)
         {
             EquipedIdx = 0;
         }
 
-        SetItemVisuals();
+        SwapItem(prev, EquipedIdx);
     }
 
     public void PrevWeapon()
     {
+        var prev = EquipedIdx;
         EquipedIdx--;
         if (EquipedIdx < 0)
         {
-            EquipedIdx = Items.Count;
+            EquipedIdx = Items.Count -1;
         }
 
-        SetItemVisuals();
+        SwapItem(prev, EquipedIdx);
     }
 
-    public void SetItemVisuals()
+    public void SwapItem(int Prev, int Next)
     {
-        var item = Items[EquipedIdx];
-        SetItemVisuals(item);
-    }
+        if (Prev != Next)
+        {
+            if (Prev != -1)
+            {
+                Items[Prev].Unequip();
+            }
 
-    public void SetItemVisuals(InvItem ItemInfo)
-    {
-        if (ItemInfo != null)
-        {
-            var itemData = WeaponsDB.Weapons[ItemInfo.ItemID];
-            FPMesh.LoadModel(itemData.FPModelInfo.Path, itemData.FPModelInfo);
-            FPAnimation.InitalWeaponPos = itemData.Position;
-        }
-        else
-        {
-            // Hide weapon
+            Items[Next].Equip(FPAnimation, FPMesh);
         }
     }
 
     public void PrimaryAction(bool Released)
     {
-
+        if (EquipedItem != null)
+        {
+            EquipedItem.PrimaryAction(Released);
+        }
     }
 
     public void SecondaryAction(bool Released)
     {
+        if (EquipedItem != null)
+        {
+            EquipedItem.SecondaryAction(Released);
+        }
+    }
 
+    public void ReloadAction(bool Released)
+    {
+        if (EquipedItem != null)
+        {
+            EquipedItem.ReloadAction(Released);
+        }
     }
 
     public void Start()
@@ -127,10 +136,19 @@ public class Inventory : MonoBehaviour
 
     private void CreateTestInventory()
     {
-        AddItem(WeaponIDs.Uzi);
-        AddItem(WeaponIDs.SLuger);
-        AddItem(WeaponIDs.SPistol);
-        AddItem(WeaponIDs.PlasmaMachineGun);
+        AddItem((int)WeaponIDs.Uzi);
+        AddItem((int)WeaponIDs.SPistol);
+
+        SwapItem(-1, 0);
+    }
+
+    private void UpdateItems()
+    {
+        for (int i = 0; i < Items.Count; i++)
+        {
+            var item = Items[i];
+            item.Update();
+        }
     }
 
     public void Update()
@@ -138,21 +156,34 @@ public class Inventory : MonoBehaviour
         if (Input.GetButtonDown("NextWeapon")) { NextWeapon(); }
         if (Input.GetButtonDown("PrevWeapon")) { PrevWeapon(); }
 
-        if (Input.GetAxis("Mouse ScrollWheel") > 0) // forward
+        if (Input.GetAxis("Mouse ScrollWheel") > 0)
         {
             NextWeapon();
         }
-        if (Input.GetAxis("Mouse ScrollWheel") < 0) // backwards
+        else if (Input.GetAxis("Mouse ScrollWheel") < 0)
         {
             PrevWeapon();
         }
+
+        if (Input.GetButtonDown("Fire1") || Input.GetMouseButtonDown(0)) { PrimaryAction(false); }
+        if (Input.GetButtonUp("Fire1") || Input.GetMouseButtonUp(0)) { PrimaryAction(true); }
+
+        if (Input.GetButtonDown("Fire2") || Input.GetMouseButtonDown(1)) { SecondaryAction(false); }
+        if (Input.GetButtonUp("Fire2") || Input.GetMouseButtonUp(1)) { SecondaryAction(true); }
+
+        if (Input.GetButtonDown("Reload")) { ReloadAction(false); }
+        if (Input.GetButtonUp("Reload")) { ReloadAction(true); }
+
+        UpdateItems();
     }
 
-    #endregion
+#endregion
 }
 
-public class InvItem
+// So i can get acess to assest store content since i can't move that to the resources folder
+// I don't like this
+[Serializable]
+public struct AssestReferances
 {
-    public WeaponIDs ItemID;
-    public bool IsEmpty;
+    public GameObject HitSpark;
 }

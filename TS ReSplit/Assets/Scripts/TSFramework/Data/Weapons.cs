@@ -14,11 +14,10 @@ namespace TS2Data
 
     public enum WeaponIDs : short
     {
-        Uzi,
+        Uzi = 0,
         SLuger,
         SPistol,
-        PlasmaMachineGun,
-        MAX
+        PlasmaMachineGun
     }
     
     public static class WeaponsDB

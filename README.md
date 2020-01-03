@@ -12,3 +12,10 @@ This project is very much a work in progress.
 [![](http://img.youtube.com/vi/5ahnKU03Lo8/0.jpg)](http://www.youtube.com/watch?v=5ahnKU03Lo8 "")
 
 [![](http://img.youtube.com/vi/-wDgaBatDUg/0.jpg)](https://www.youtube.com/watch?v=-wDgaBatDUg "")
+
+# Unity Assest Store Free Packs
+Thanks to the creators of the below assest packs that were used.
+
+You will need to get these from the assest store your self to build the project.
+
+[Effect textures and prefabs](https://assetstore.unity.com/packages/vfx/particles/effect-textures-and-prefabs-109031) (placeholders hope to replace these)

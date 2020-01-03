@@ -134,8 +134,8 @@ public class PlayerAnimController : MonoBehaviour
 
     private void GetComponets()
     {
-        CharController   = GetComponent<CharacterController>();
-        NavAgent         = GetComponent<NavMeshAgent>();
+        CharController   = GetComponentInParent<CharacterController>() ?? GetComponent<CharacterController>();
+        NavAgent         = GetComponent<NavMeshAgent>() ?? GetComponentInParent<NavMeshAgent>();
         AnimationManager = GetComponent<TS2AnimationManager>();
         Animation        = GetComponent<Animation>();
         Model            = GetComponent<AnimatedModelV2>();

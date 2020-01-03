@@ -132,14 +132,10 @@ public class TSPak
 
         for (int i = 0; i < numEntries; i++)
         {
-            try
+            var entry = ReadDirEntryV4(R);
+            if (!FileEntries.ContainsKey(entry.Name))
             {
-                var entry = ReadDirEntryV4(R);
                 FileEntries.Add(entry.Name, entry);
-            }
-            catch (Exception e)
-            {
-
             }
         }
     }

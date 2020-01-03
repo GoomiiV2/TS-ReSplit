@@ -38,6 +38,10 @@ namespace TSFramework.Singletons
         // Tries to get a cached item, and if its not cached uses the given Create function to create it and then cache it
         public T TryCache<T>(string Path, Func<string, T> Create, CacheType Type = CacheType.ClearOnLevelLoad)
         {
+#if UNITY_EDITOR
+            return Create(Path);
+#endif
+
             if (!CachedItems.ContainsKey(Path))
             {
                 var item = Create(Path);

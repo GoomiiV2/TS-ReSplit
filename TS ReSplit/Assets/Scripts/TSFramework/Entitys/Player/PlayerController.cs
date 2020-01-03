@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour
 {
     public PlayerData PlayerData;
     public PlayerPrefs Prefs;
+    public bool IsInFirstPerson = true;
 
     private CharacterController CharController;
     private GameObject FirstPerson;
@@ -29,6 +30,8 @@ public class PlayerController : MonoBehaviour
             LookSens   = new Vector2(1.0f, 1.0f),
             InvertLook = false
         };
+
+        SetViewMode(IsInFirstPerson);
     }
 
     void Update()
@@ -41,6 +44,13 @@ public class PlayerController : MonoBehaviour
         CursorLock();
         HandleMovement();
         HandleLook();
+    }
+
+    private void SetViewMode(bool FirstPersonView)
+    {
+        IsInFirstPerson = FirstPersonView;
+        FirstPerson.SetActive (FirstPersonView);
+        ThirdPerson.SetActive(!FirstPersonView);
     }
 
     private void HandleMovement()
