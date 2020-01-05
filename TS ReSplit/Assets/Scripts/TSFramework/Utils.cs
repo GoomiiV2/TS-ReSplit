@@ -11,7 +11,7 @@ namespace Assets.Scripts.TSFramework
 {
     public static class Utils
     {
-        public static string Version = "0.1 Alpha"; // Improve this, hopefully make it auto increment on build
+        public static string Version = "0.2 Alpha"; // Improve this, hopefully make it auto increment on build
 
         public static Vector3 V3FromFloats(float[] Floats)
         {

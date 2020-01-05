@@ -7,7 +7,8 @@ namespace TS2Data
     public enum ModelType
     {
         Player,
-        Weapon
+        Weapon,
+        Skybox
     }
 
     public static class PlayerModels
@@ -15,6 +16,7 @@ namespace TS2Data
         public const string Viola          = "Viola";
         public const string ReaperSplitter = "ReaperSplitter";
         public const string CorpHart       = "CorpHart";
+        public const string LtShade        = "LtShade";
     };
 
     public static class WeaponModels
@@ -29,7 +31,13 @@ namespace TS2Data
         public const string PlasmaMachineGunPromo = "Plasma Machine Gun Promo";
     };
 
-    public static class ModelDB
+    public static class SkyBoxModels
+    {
+        public const string SkyYellowAfternoon = "SkyYellowAfternoon";
+        public const string SkyColdNight       = "SkyColdNight";
+    }
+
+        public static class ModelDB
     {
         // Note: If BoneToMehses is null then an auto maped binging will be created and used
         public static readonly Dictionary<string, TS2ModelInfo>[] Models = new Dictionary<string, TS2ModelInfo>[]
@@ -80,7 +88,7 @@ namespace TS2Data
                         Name         = PlayerModels.ReaperSplitter,
                         Path         = "ts2/pak/chr.pak/ob/chrs/chr56.raw",
                         SkelType     = TS2AnimationData.SkelationType.Human,
-                        BoneToMehses = Bonemap.Create(new short[][]
+                        BoneToMehses = null /*Bonemap.Create(new short[][]
                         {
                             new short[] { 0, 1 },
                             new short[] { 3 },
@@ -105,7 +113,7 @@ namespace TS2Data
                             new short[] { 31, 32 },
                             new short[] { 33, 34 },
                             new short[] { 35, 36 },
-                        })
+                        })*/
                     }
                 },
 
@@ -142,6 +150,17 @@ namespace TS2Data
                             new short[] { 33, 34 },
                             new short[] { 35, 36 },
                         })
+                    }
+                },
+
+                {
+                    PlayerModels.LtShade,
+                    new TS2ModelInfo()
+                    {
+                        Name         = PlayerModels.LtShade,
+                        Path         = "ts2/pak/chr.pak/ob/chrs/chr32.raw",
+                        SkelType     = TS2AnimationData.SkelationType.Human,
+                        BoneToMehses = null
                     }
                 },
             },
@@ -215,6 +234,31 @@ namespace TS2Data
                     {
                         Name         = WeaponModels.PlasmaMachineGunPromo,
                         Path         = "ts2/pak/gun.pak/ob/guns/plasmamachinegun_promo.raw",
+                        SkelType     = TS2AnimationData.SkelationType.None,
+                        IngoreMeshes = new int[] { }
+                    }
+                }
+            },
+
+            // Skyboxes
+            new Dictionary<string, TS2ModelInfo>
+            {
+                {
+                    SkyBoxModels.SkyYellowAfternoon,
+                    new TS2ModelInfo()
+                    {
+                        Name         = SkyBoxModels.SkyYellowAfternoon,
+                        Path         = "ts2/pak/story/l_35_ST.pak/ob/skies/skyyellowafternoon.raw",
+                        SkelType     = TS2AnimationData.SkelationType.None,
+                        IngoreMeshes = new int[] { }
+                    }
+                },
+                {
+                    SkyBoxModels.SkyColdNight,
+                    new TS2ModelInfo()
+                    {
+                        Name         = SkyBoxModels.SkyColdNight,
+                        Path         = "ts2/pak/story/l_10_ST.pak/ob/skies/skycoldnight.raw",
                         SkelType     = TS2AnimationData.SkelationType.None,
                         IngoreMeshes = new int[] { }
                     }
