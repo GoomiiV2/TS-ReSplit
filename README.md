@@ -9,9 +9,9 @@ This project is very much a work in progress.
 
 # Visual Progress
 
-[![](http://img.youtube.com/vi/5ahnKU03Lo8/0.jpg)](http://www.youtube.com/watch?v=5ahnKU03Lo8 "")
+[![](http://img.youtube.com/vi/jp1Slei3I4w/0.jpg)](https://www.youtube.com/watch?v=jp1Slei3I4w "")
 
-[![](http://img.youtube.com/vi/-wDgaBatDUg/0.jpg)](https://www.youtube.com/watch?v=-wDgaBatDUg "")
+[![](http://img.youtube.com/vi/5ahnKU03Lo8/0.jpg)](http://www.youtube.com/watch?v=5ahnKU03Lo8 "")
 
 # Unity Assest Store Free Packs
 Thanks to the creators of the below assest packs that were used.
