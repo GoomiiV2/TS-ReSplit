@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEditor;
 using TS2Data;
 using static PlayerAnimController;
+using System;
 
 [RequireComponent(typeof(Animation))]
 public class TS2AnimationManager : MonoBehaviour
@@ -12,6 +13,9 @@ public class TS2AnimationManager : MonoBehaviour
     private Animation Animation;
     private bool HasCurrentAnimFinished;
     private AnimatedModelV2 Model;
+    public Action<string> OnAnimationFinishedCB;
+
+    private string OneShotAnimationName = null;
 
     void Awake()
     {
@@ -69,10 +73,15 @@ public class TS2AnimationManager : MonoBehaviour
         return clip;
     }
 
-    public void PlayAnimation(AnimationClip AnimClip)
+    public void PlayAnimation(AnimationClip AnimClip, bool OneShot = false)
     {
         AddAnimation(AnimClip);
         Animation.Play(AnimClip.name, PlayMode.StopAll);
+
+        if (OneShot)
+        {
+            OneShotAnimationName = AnimClip.name;
+        }
     }
 
     private void AddAnimation(AnimationClip AnimClip)
@@ -83,6 +92,7 @@ public class TS2AnimationManager : MonoBehaviour
     public void AnimationFinished(string AnimationName)
     {
         Debug.Log($"Animation {AnimationName} finished.");
+        if (OnAnimationFinishedCB != null) { OnAnimationFinishedCB(AnimationName); }
     }
 
     private void GetComponets()

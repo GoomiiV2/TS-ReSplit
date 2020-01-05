@@ -161,10 +161,14 @@ public static class TSMeshUtils
             mesh.RecalculateNormals();
             if (Options.IsMapMesh && mesh.vertices != null && mesh.vertices.Count() > 0)
             {
-                #if UNITY_EDITOR
-                    // TODO: Find or well more likey make a runtime alterntive for this since its locked away as editor only :<
-                    Unwrapping.GenerateSecondaryUVSet(mesh);
-                #endif
+#if UNITY_EDITOR
+                // TODO: Find or well more likey make a runtime alterntive for this since its locked away as editor only :<
+                //var vertsBefore   = mesh.vertices;
+                Unwrapping.GenerateSecondaryUVSet(mesh);
+                //var diffVerts = mesh.vertices.Except(vertsBefore).ToArray();
+#endif
+
+                //CreateUV(ref mesh);
             }
         }
 
@@ -366,6 +370,78 @@ public static class TSMeshUtils
         };
 
         return v3;
+    }
+
+    public static Vector2[] CreateUV(ref Mesh mesh)
+    {
+
+        int i = 0;
+        Vector3 p = Vector3.up;
+        Vector3 u = Vector3.Cross(p, Vector3.forward);
+        if (Vector3.Dot(u, u) < 0.001f)
+        {
+            u = Vector3.right;
+        }
+        else
+        {
+            u = Vector3.Normalize(u);
+        }
+
+        Vector3 v = Vector3.Normalize(Vector3.Cross(p, u));
+        Vector3[] vertexs = mesh.vertices;
+        int[] tris = mesh.triangles;
+        Vector2[] uvs = new Vector2[vertexs.Length];
+
+        for (i = 0; i < tris.Length; i += 3)
+        {
+
+            Vector3 a = vertexs[tris[i]];
+            Vector3 b = vertexs[tris[i + 1]];
+            Vector3 c = vertexs[tris[i + 2]];
+            Vector3 side1 = b - a;
+            Vector3 side2 = c - a;
+            Vector3 N = Vector3.Cross(side1, side2);
+
+            N = new Vector3(Mathf.Abs(N.normalized.x), Mathf.Abs(N.normalized.y), Mathf.Abs(N.normalized.z));
+
+
+
+            if (N.x > N.y && N.x > N.z)
+            {
+                uvs[tris[i]] = new Vector2(vertexs[tris[i]].z, vertexs[tris[i]].y);
+                uvs[tris[i + 1]] = new Vector2(vertexs[tris[i + 1]].z, vertexs[tris[i + 1]].y);
+                uvs[tris[i + 2]] = new Vector2(vertexs[tris[i + 2]].z, vertexs[tris[i + 2]].y);
+            }
+            else if (N.y > N.x && N.y > N.z)
+            {
+                uvs[tris[i]] = new Vector2(vertexs[tris[i]].x, vertexs[tris[i]].z);
+                uvs[tris[i + 1]] = new Vector2(vertexs[tris[i + 1]].x, vertexs[tris[i + 1]].z);
+                uvs[tris[i + 2]] = new Vector2(vertexs[tris[i + 2]].x, vertexs[tris[i + 2]].z);
+            }
+            else if (N.z > N.x && N.z > N.y)
+            {
+                uvs[tris[i]] = new Vector2(vertexs[tris[i]].x, vertexs[tris[i]].y);
+                uvs[tris[i + 1]] = new Vector2(vertexs[tris[i + 1]].x, vertexs[tris[i + 1]].y);
+                uvs[tris[i + 2]] = new Vector2(vertexs[tris[i + 2]].x, vertexs[tris[i + 2]].y);
+            }
+
+        }
+
+        // Get the uvs in 0 to 1 range
+        var uvsX = uvs.Select(x => x.x);
+        var uvsY = uvs.Select(x => x.y);
+        var min  = new Vector2(uvsX.Min(), uvsY.Min());
+        var max  = new Vector2(uvsX.Max(), uvsY.Max());
+
+        float Map(float a1, float a2, float b1, float b2, float s) => b1 + (s - a1) * (b2 - b1) / (a2 - a1);
+        for (int idx = 0; idx < uvs.Length; idx++)
+        {
+            uvs[idx].x = Map(min.x + min.x, max.x, 0, 1, min.x + uvs[idx].x);
+            uvs[idx].y = Map(min.y + min.y, max.y, 0, 1, min.y + uvs[idx].y);
+        }
+
+        mesh.uv2 = uvs;
+        return uvs;
     }
 }
 

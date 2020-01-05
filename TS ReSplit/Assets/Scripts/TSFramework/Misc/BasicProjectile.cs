@@ -29,6 +29,7 @@ public class BasicProjectile : MonoBehaviour
         RB      = GetComponent<Rigidbody>();
         var vel = (Dir * Speed) - RB.velocity;
         RB.AddForce(vel, ForceMode.VelocityChange);
+        this.Damage = Damage;
     }
 
     public void FixedUpdate()
@@ -41,6 +42,9 @@ public class BasicProjectile : MonoBehaviour
         // This is eh
         SparkGO                    = Instantiate(OwnerInv.AssestReferances.HitSpark);
         SparkGO.transform.position = Coll.contacts[0].point;
+
+        var damagable = Coll.gameObject.GetComponent<IDamageable>();
+        damagable?.ApplyDamage(Damage);
 
         Destroy(gameObject);
         Destroy(SparkGO, 0.5f);

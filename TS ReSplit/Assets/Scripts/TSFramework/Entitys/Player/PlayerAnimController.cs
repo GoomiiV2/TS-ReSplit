@@ -41,9 +41,23 @@ public class PlayerAnimController : MonoBehaviour
     {
         GetComponets();
 
+        AnimationManager.OnAnimationFinishedCB = OnAnimationFinished;
+
         AnimationManager.AddAnimationRecord("Idle_1", AnimationDB.PlayerAnimations[PlayerAnims.IdleScratchHead], TS2AnimationManager.AnimationSlot.Full);
         AnimationManager.AddAnimationRecord("Idle_2", AnimationDB.PlayerAnimations[PlayerAnims.IdleStand], TS2AnimationManager.AnimationSlot.Full);
         AnimationManager.LoadMoveSet(MoveSets[(int)MoveSetTypes.Walk]);
+
+        HitAnimations.Entries.Add(new AnimationPoolEntry()
+        {
+            Animation = PlayerAnims.HitRightShoulder,
+            Chance    = 0.5f
+        });
+
+        HitAnimations.Entries.Add(new AnimationPoolEntry()
+        {
+            Animation = PlayerAnims.HitRightLeg,
+            Chance    = 0.5f
+        });
 
         //PlayAnimation(TS2Data.PlayerAnims.WalkFwd);
     }
@@ -69,10 +83,16 @@ public class PlayerAnimController : MonoBehaviour
         if (ShouldDrawDebugHelpers) { DrawDebugHelpers(); }
     }
 
+    private void OnAnimationFinished(string AnimName)
+    {
+        LastMovementState = MoveState.Unknown;
+    }
+
     public void PlayHitAnimation()
     {
         var anim = HitAnimations.Pick();
-        PlayAnimation(anim);
+        PlayAnimation(anim, true);
+        //Animation.CrossFade(anim);
     }
 
     void PlayMovementAnims()
@@ -113,11 +133,11 @@ public class PlayerAnimController : MonoBehaviour
         }
     }
 
-    public void PlayAnimation(string Animation)
+    public void PlayAnimation(string Animation, bool OneShot = false)
     {
         if (AnimStore.TryGetValue(Animation, out AnimationClip Animclip))
         {
-            AnimationManager.PlayAnimation(Animclip);
+            AnimationManager.PlayAnimation(Animclip, OneShot);
         }
         else
         {
@@ -128,7 +148,7 @@ public class PlayerAnimController : MonoBehaviour
 
             AnimStore.Add(Animation, clip);
 
-            AnimationManager.PlayAnimation(clip);
+            AnimationManager.PlayAnimation(clip, OneShot);
         }
     }
 
