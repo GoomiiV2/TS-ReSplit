@@ -7,6 +7,22 @@ Then on top of that to build a framework for loading and using those assets in a
 
 This project is very much a work in progress.
 
+# Progress
+## File Format Parsing
+- [x] PAK archive files for TS1/2/3 and Second Sight
+- [x] PS2 TS2 Textures
+- [x] TS2 Model format
+- [ ] TS2 Animations (80% some animation types are yet to be worked out
+- [ ] TS2 Level Data (70% Got enough to work with)
+  - [x] Mesh Data
+  - [x] Material listing
+  - [x] Vis portals and doors
+  - [x] Level segments
+  - [ ] Other Data
+- [x] PAD AI pathing
+- [x] Vag sound files
+- [x] MIB music files
+
 # Visual Progress
 
 [![](http://img.youtube.com/vi/jp1Slei3I4w/0.jpg)](https://www.youtube.com/watch?v=jp1Slei3I4w "")
