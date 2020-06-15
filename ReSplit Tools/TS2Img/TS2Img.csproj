@@ -48,6 +48,7 @@
     <Compile Include="..\..\TS ReSplit\Assets\Scripts\TSLoader\TS2Texture.cs">
       <Link>TS2Texture.cs</Link>
     </Compile>
+    <Compile Include="Converter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Util.cs" />

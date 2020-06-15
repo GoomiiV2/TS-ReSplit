@@ -16,7 +16,8 @@ namespace TS2Img
         {
             //ConvertToTS2Img(args[0], args[1]);
 
-            CreateDebugTextureFromTS2(args[0], args[1]);
+            //CreateDebugTextureFromTS2(args[0], args[1]);
+            Converter.TS2ImgToPNG(args[0], "");
         }
 
         static bool IsTS2Img()
