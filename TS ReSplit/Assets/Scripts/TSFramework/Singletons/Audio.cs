@@ -13,16 +13,24 @@ namespace TSFramework.Singletons
             {
                 var name      = Path.GetFileNameWithoutExtension(path);
                 var data      = TSAssetManager.LoadFile(path);
-                var audioFile = new PS2.Vag(data);
 
-                var soundSamples = audioFile.GetSamples();
-                var clip         = AudioClip.Create(name, soundSamples.Length, audioFile.Head.Channels == 0 ? 1 : audioFile.Head.Channels, (int)audioFile.Head.Frequency, false);
-                clip.SetData(soundSamples, 0);
+                var clip         = GetAudioClip(data, name);
 
                 return clip;
             }, CacheType.ClearOnLevelLoad);
 
             return audioClip;
+        }
+        
+        public AudioClip GetAudioClip(byte[] data, string name)
+        {
+                var audioFile = new PS2.Vag(data);
+
+                var soundSamples = audioFile.GetSamples();
+                var clip         = AudioClip.Create("", soundSamples.Length, audioFile.Head.Channels == 0 ? 1 : audioFile.Head.Channels, (int)audioFile.Head.Frequency, false);
+                clip.SetData(soundSamples, 0);
+
+                return clip;
         }
     }
 }

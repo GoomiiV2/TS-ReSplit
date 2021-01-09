@@ -8,8 +8,8 @@ namespace TS2
     public class Texture
     {
         const byte OPAQUE_ALPHA_VALUE = 127;
-        public uint ID;
-        public uint UNK;
+        public int ID;
+        public int UNK;
         public int Width;
         public int Height;
 
@@ -41,8 +41,8 @@ namespace TS2
 
         public void Load(BinaryReader R)
         {
-            ID     = R.ReadUInt32();
-            UNK    = R.ReadUInt32();
+            ID     = R.ReadInt32();
+            UNK    = R.ReadInt32();
             Width  = R.ReadInt32();
             Height = R.ReadInt32();
 

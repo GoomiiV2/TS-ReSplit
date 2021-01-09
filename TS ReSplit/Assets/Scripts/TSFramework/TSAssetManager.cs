@@ -243,7 +243,7 @@ public class TSAssetManager
 
     // Why not just use the volumelabel? because .Net doesn't give me that :<
     // So parse the SYSTEM.CNF file on the disc and get the id from that
-    private static string GetPS2GameIDFromDisc(string DrivePath)
+    public static string GetPS2GameIDFromDisc(string DrivePath)
     {
         var filePath = Path.Combine(DrivePath, "SYSTEM.CNF");
         if (File.Exists(filePath))

@@ -20,6 +20,16 @@ public class StreamedMib
     public StreamedMib(string FilePath, string Name = "Streamed Mib Audio")
     {
         var data = TSAssetManager.LoadFile(FilePath);
+        Create(data, Name);
+    }
+    
+    public StreamedMib(byte[] data, string Name = "Streamed Mib Audio")
+    {
+        Create(data, Name);
+    }
+    
+    public void Create(byte[] data, string Name = "Streamed Mib Audio")
+    {
         Reader   = new BinaryReader(new MemoryStream(data));
 
         MibFile = new PS2.Mib(data, PS2.Mib.DecodeMode.DecodeLater);

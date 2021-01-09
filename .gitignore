@@ -2,3 +2,7 @@ Data/*
 *AnimatedModelTest*
 .vscode
 /TS ReSplit/Assets/EffectTexturesAndPrefabs
+/TS ReSplit - Copy
+.idea
+TS ReSplit/imgui.ini
+TS ReSplit/UserSettings/EditorUserSettings.asset
