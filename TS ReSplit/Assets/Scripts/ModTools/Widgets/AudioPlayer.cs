@@ -73,7 +73,7 @@ namespace ModTools.Widgets
                 }
             }
             else {
-                if (fe.FileType == FileTypes.Music && fe.Platform == Platforms.TS1 || fe.Platform == Platforms.TS2_PS2 || fe.Platform == Platforms.TS3_PS2) {
+                if (fe.FileType == FileTypes.Music && (fe.Platform == Platforms.TS1 || fe.Platform == Platforms.TS2_PS2 || fe.Platform == Platforms.TS3_PS2)) {
                     PreviewState.MibFile = new StreamedMib(fe.GetFileData());
                     PreviewState.Clip    = PreviewState.MibFile.Clip;
                 }

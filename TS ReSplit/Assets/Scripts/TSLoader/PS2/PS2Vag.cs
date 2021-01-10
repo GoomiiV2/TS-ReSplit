@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using TS;
@@ -120,23 +121,31 @@ namespace PS2
                 var shift     = DecodingCoeff >> 0 & 0xF;
 
                 int byteIdx = 0;
-                for (int aye = 0; aye < SAMPLES_PER_BLOCK; aye += 2)
-                {
-                    byte delta = Data[byteIdx++];
-                    var sample = (short)((delta & 0xf) << 12);
+                //unchecked {
+                    for (int aye = 0; aye < SAMPLES_PER_BLOCK; aye += 2) {
+                        byte delta  = Data[byteIdx++];
+                        var  sample = (short) ((delta & 0xf) << 12);
 
-                    if ((sample & 0x8000) == 1) { sample |= unchecked((short)0xffff0000); }
-                    Buffer[BufferOffset + aye] = DecodeSample((sample >> shift), predictor, ref PrevSamples);
+                        if ((sample & 0x8000) == 1) {
+                            sample |= unchecked((short) 0xffff0000);
+                        }
 
-                    sample = (short)((delta & 0xf0) << 8);
+                        Buffer[BufferOffset + aye] = DecodeSample((sample >> shift), predictor, ref PrevSamples);
 
-                    if ((sample & 0x8000) == 1) { sample |= unchecked((short)0xffff0000); }
-                    Buffer[BufferOffset + aye + 1] = DecodeSample((sample >> shift), predictor, ref PrevSamples);
-                }
+                        sample = (short) ((delta & 0xf0) << 8);
+
+                        if ((sample & 0x8000) == 1) {
+                            sample |= unchecked((short) 0xffff0000);
+                        }
+
+                        Buffer[BufferOffset + aye + 1] = DecodeSample((sample >> shift), predictor, ref PrevSamples);
+                    }
+                //}
 
                 return SAMPLES_PER_BLOCK;
             }
 
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             private float DecodeSample(int Sample, int Predictor, ref short[] PrevSamples)
             {
                 var samp = Sample + PredictorLookup[Predictor][0] * PrevSamples[0] + PredictorLookup[Predictor][1] * PrevSamples[1];

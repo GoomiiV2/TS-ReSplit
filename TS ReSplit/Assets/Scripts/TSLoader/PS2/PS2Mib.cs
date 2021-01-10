@@ -175,7 +175,7 @@ namespace PS2
             }
         }
 
-        public void DecodeInterleaveBlock(BinaryReader R, ref float[] Samples)
+        public void DecodeInterleaveBlock(ref float[] Samples)
         {
             var numBlocksPerInterleave = Interleave / AudioBlock.SIZE;
             for (int i = 0; i < MetaInfo.NumChannels; i++)
